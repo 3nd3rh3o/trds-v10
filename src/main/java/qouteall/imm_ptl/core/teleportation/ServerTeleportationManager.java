@@ -246,8 +246,8 @@ public class ServerTeleportationManager {
         if (portalEntity == null) {
             return null;
         }
-        if (portalEntity instanceof Portal) {
-            return ((Portal) portalEntity);
+        if (portalEntity instanceof Portal portal) {
+            return portal;
         }
         return null;
     }
@@ -796,8 +796,8 @@ public class ServerTeleportationManager {
                 if (chaser.isRemoved()) {
                     // the chaser teleported
                     Entity newChaser = destWorld.getEntity(chaserId);
-                    if (newChaser instanceof Mob) {
-                        ((Mob) newChaser).setTarget(player);
+                    if (newChaser instanceof Mob mob) {
+                        mob.setTarget(player);
                         return true;
                     }
                     else {

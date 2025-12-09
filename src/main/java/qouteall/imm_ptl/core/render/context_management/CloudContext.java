@@ -77,7 +77,7 @@ public class CloudContext {
         contexts.add(context);
         
         if (contexts.size() > 15) {
-            contexts.remove(0).dispose();
+            contexts.removeFirst().dispose();
         }
     }
 }

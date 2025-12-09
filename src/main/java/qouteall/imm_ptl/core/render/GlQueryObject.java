@@ -87,7 +87,7 @@ public class GlQueryObject {
             prepareQueryObjects();
         }
         
-        return queryObjects.remove(queryObjects.size() - 1);
+        return queryObjects.removeLast();
     }
     
     public static void returnQueryObject(GlQueryObject obj) {

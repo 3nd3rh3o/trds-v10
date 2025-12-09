@@ -115,7 +115,7 @@ public class WorldWrappingPortal extends GlobalTrackedPortal {
         
         public boolean isValid() {
             return (portals.size() == 4) &&
-                (portals.get(0).isInward == isInwardZone) &&
+                (portals.getFirst().isInward == isInwardZone) &&
                 (portals.get(1).isInward == isInwardZone) &&
                 (portals.get(2).isInward == isInwardZone) &&
                 (portals.get(3).isInward == isInwardZone);
@@ -166,8 +166,7 @@ public class WorldWrappingPortal extends GlobalTrackedPortal {
         @Override
         public String toString() {
             AABB area = getArea();
-            return String.format(
-                "[%d] %s %s %s ~ %s %s\n",
+            return "[%d] %s %s %s ~ %s %s\n".formatted(
                 id,
                 isInwardZone ? "inward" : "outward",
                 area.minX, area.minZ,
@@ -189,7 +188,7 @@ public class WorldWrappingPortal extends GlobalTrackedPortal {
             ))
             .forEach((zoneId, portals) -> {
                 result.add(new WrappingZone(
-                    world, portals.get(0).isInward,
+                    world, portals.getFirst().isInward,
                     zoneId, portals
                 ));
             });

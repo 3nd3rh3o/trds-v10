@@ -877,13 +877,13 @@ public class Portal extends Entity implements
     public void renderViewAreaMesh(
         Vec3 portalPosRelativeToCamera, TriangleConsumer vertexOutput
     ) {
-        if (this instanceof Mirror) {
+        if (this instanceof Mirror mirror) {
             //rendering portal behind translucent objects with shader is broken
             boolean offsetFront = IrisInterface.invoker.isShaders()
                 || IPGlobal.pureMirror;
             double mirrorOffset = offsetFront ? 0.01 : -0.01;
             portalPosRelativeToCamera = portalPosRelativeToCamera.add(
-                ((Mirror) this).getNormal().scale(mirrorOffset));
+                mirror.getNormal().scale(mirrorOffset));
         }
         
         getPortalShape().renderViewAreaMesh(
@@ -1040,8 +1040,7 @@ public class Portal extends Entity implements
     
     @Override
     public @NotNull String toString() {
-        return String.format(
-            "%s{%s,%s,(%s %.1f %.1f %.1f)->(%s %.1f %.1f %.1f)%s%s%s}",
+        return "%s{%s,%s,(%s %.1f %.1f %.1f)->(%s %.1f %.1f %.1f)%s%s%s}".formatted(
             getClass().getSimpleName(),
             getId(),
             getApproximateFacingDirection(),

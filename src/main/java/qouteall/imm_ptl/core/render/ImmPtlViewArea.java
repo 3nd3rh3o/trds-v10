@@ -380,8 +380,7 @@ public class ImmPtlViewArea extends ViewArea {
     }
     
     public String getDebugString() {
-        return String.format(
-            "Built Section Storage Columns:%s",
+        return "Built Section Storage Columns:%s".formatted(
             columnMap.size()
         );
     }

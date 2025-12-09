@@ -95,8 +95,8 @@ public class BlockManipulationClient {
             return 23333;
         }
         
-        if (client.hitResult instanceof BlockHitResult) {
-            BlockPos hitPos = ((BlockHitResult) client.hitResult).getBlockPos();
+        if (client.hitResult instanceof BlockHitResult result) {
+            BlockPos hitPos = result.getBlockPos();
             if (client.level.getBlockState(hitPos).getBlock() == PortalPlaceholderBlock.instance) {
                 return 23333;
             }

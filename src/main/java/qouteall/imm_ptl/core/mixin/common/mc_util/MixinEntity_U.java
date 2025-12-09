@@ -17,8 +17,8 @@ public class MixinEntity_U {
         )
     )
     private void onUpdateEntityPosition(double x, double y, double z, CallbackInfo ci) {
-        if (this instanceof IPEntityEventListenableEntity) {
-            ((IPEntityEventListenableEntity) this).ip_onEntityPositionUpdated();
+        if (this instanceof IPEntityEventListenableEntity entity) {
+            entity.ip_onEntityPositionUpdated();
         }
     }
     
@@ -27,8 +27,8 @@ public class MixinEntity_U {
         at = @At("RETURN")
     )
     private void onSetRemoved(Entity.RemovalReason reason, CallbackInfo ci) {
-        if (this instanceof IPEntityEventListenableEntity) {
-            ((IPEntityEventListenableEntity) this).ip_onRemoved(reason);
+        if (this instanceof IPEntityEventListenableEntity entity) {
+            entity.ip_onRemoved(reason);
         }
     }
 }

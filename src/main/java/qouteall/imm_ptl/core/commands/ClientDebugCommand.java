@@ -299,7 +299,7 @@ public class ClientDebugCommand {
             .executes(context -> {
                 MinecraftServer server = MiscHelper.getServer();
                 server.execute(() -> {
-                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                     
                     BlockPos.betweenClosedStream(
                         player.blockPosition().offset(-2, -2, -2),
@@ -316,7 +316,7 @@ public class ClientDebugCommand {
                 .executes(context -> {
                     MinecraftServer server = MiscHelper.getServer();
                     server.execute(() -> {
-                        ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                        ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                         
                         ThreadedLevelLightEngine lightingProvider = (ThreadedLevelLightEngine) player.level().getLightEngine();
                         lightingProvider.lightChunk(
@@ -778,8 +778,7 @@ public class ClientDebugCommand {
             LocalPlayer playerSP = Minecraft.getInstance().player;
             
             CHelper.printChat(
-                String.format(
-                    "On Client %s %s removal:%s added:%s age:%s",
+                "On Client %s %s removal:%s added:%s age:%s".formatted(
                     playerSP.level().dimension().location(),
                     playerSP.blockPosition(),
                     playerSP.getRemovalReason(),
@@ -811,8 +810,7 @@ public class ClientDebugCommand {
             
             str.append("Client Chunk:\n");
             ClientWorldLoader.getClientWorlds().forEach(world -> {
-                str.append(String.format(
-                    "%s %s\n",
+                str.append("%s %s\n".formatted(
                     world.dimension().location(),
                     world.getChunkSource().getLoadedChunksCount()
                 ));
@@ -822,8 +820,7 @@ public class ClientDebugCommand {
             str.append("Chunk Mesh Sections:\n");
             ClientWorldLoader.WORLD_RENDERER_MAP.forEach(
                 (dimension, worldRenderer) -> {
-                    str.append(String.format(
-                        "%s %s\n",
+                    str.append("%s %s\n".formatted(
                         dimension.location(),
                         ((ImmPtlViewArea) ((IEWorldRenderer) worldRenderer)
                             .ip_getBuiltChunkStorage()

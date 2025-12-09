@@ -200,8 +200,7 @@ public abstract class MixinEntity implements IEEntity, ImmPtlEntityExtension {
                     Math.abs(getY() - ny) > 10 ||
                     Math.abs(getZ() - nz) > 10
                 ) {
-                    Helper.log(String.format(
-                        "%s %s teleported from %s %s %s to %s %s %s",
+                    Helper.log("%s %s teleported from %s %s %s to %s %s %s".formatted(
                         getName().getContents(),
                         level.dimension(),
                         (int) getX(), (int) getY(), (int) getZ(),
@@ -258,7 +257,7 @@ public abstract class MixinEntity implements IEEntity, ImmPtlEntityExtension {
         if (ip_portalCollisionHandler.portalCollisions.isEmpty()) {
             return null;
         }
-        return ip_portalCollisionHandler.portalCollisions.get(0).portal;
+        return ip_portalCollisionHandler.portalCollisions.getFirst().portal;
     }
     
     // this should be called between the range of updating last tick pos and calculating movement

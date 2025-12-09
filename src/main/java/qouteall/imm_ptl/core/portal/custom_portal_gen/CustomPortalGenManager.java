@@ -143,12 +143,12 @@ public class CustomPortalGenManager {
     
     private void load(CustomPortalGeneration gen) {
         PortalGenTrigger trigger = gen.trigger;
-        if (trigger instanceof PortalGenTrigger.UseItemTrigger) {
-            useItemGen.put(((PortalGenTrigger.UseItemTrigger) trigger).item, gen);
+        if (trigger instanceof PortalGenTrigger.UseItemTrigger itemTrigger) {
+            useItemGen.put(itemTrigger.item, gen);
         }
-        else if (trigger instanceof PortalGenTrigger.ThrowItemTrigger) {
+        else if (trigger instanceof PortalGenTrigger.ThrowItemTrigger itemTrigger) {
             throwItemGen.put(
-                ((PortalGenTrigger.ThrowItemTrigger) trigger).item,
+                itemTrigger.item,
                 gen
             );
         }

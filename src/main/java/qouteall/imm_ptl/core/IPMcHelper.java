@@ -222,7 +222,7 @@ public class IPMcHelper {
             return new Tuple<>(hitResult, portals);
         }
         
-        Tuple<Portal, Vec3> portalHit = rayTracedPortals.get(0);
+        Tuple<Portal, Vec3> portalHit = rayTracedPortals.getFirst();
         Portal portal = portalHit.getA();
         Vec3 intersection = portalHit.getB();
         

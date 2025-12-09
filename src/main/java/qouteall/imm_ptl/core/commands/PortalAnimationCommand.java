@@ -29,6 +29,7 @@ import qouteall.q_misc_util.my_util.Vec2d;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PortalAnimationCommand {
     static void registerPortalAnimationCommands(LiteralArgumentBuilder<CommandSourceStack> builder) {
@@ -124,7 +125,7 @@ public class PortalAnimationCommand {
                 AnimationView animationView = portal.getAnimationView();
                 List<PortalAnimationDriver> thisSideAnimations = animationView.getThisSideAnimations();
                 if (!thisSideAnimations.isEmpty()) {
-                    thisSideAnimations.remove(thisSideAnimations.size() - 1);
+                    thisSideAnimations.removeLast();
                     PortalCommand.reloadPortal(portal);
                     context.getSource().sendSuccess(() -> getAnimationInfo(portal), false);
                 }
@@ -160,11 +161,11 @@ public class PortalAnimationCommand {
             .executes(context -> PortalCommand.processPortalTargetedCommand(context, portal -> {
                 Vec3 rotationCenter = context.getSource().getPosition();
                 Vec3 axis = new Vec3(
-                    Math.random() - 0.5,
-                    Math.random() - 0.5,
-                    Math.random() - 0.5
+                    ThreadLocalRandom.current().nextDouble() - 0.5,
+                    ThreadLocalRandom.current().nextDouble() - 0.5,
+                    ThreadLocalRandom.current().nextDouble() - 0.5
                 ).normalize();
-                double angularVelocity = Math.random() * 3;
+                double angularVelocity = ThreadLocalRandom.current().nextDouble() * 3;
                 
                 giveRotationAnimation(portal, rotationCenter, axis, angularVelocity);
                 
@@ -578,9 +579,9 @@ public class PortalAnimationCommand {
             return;
         }
         
-        NormalAnimation.Phase lastThisSidePhase = thisSidePhases.get(thisSidePhases.size() - 1);
+        NormalAnimation.Phase lastThisSidePhase = thisSidePhases.getLast();
         DeltaUnilateralPortalState lastThisSidePhaseDelta = lastThisSidePhase.delta().purgeFPError();
-        NormalAnimation.Phase lastOtherSidePhase = otherSidePhases.get(otherSidePhases.size() - 1);
+        NormalAnimation.Phase lastOtherSidePhase = otherSidePhases.getLast();
         DeltaUnilateralPortalState lastOtherSidePhaseDelta = lastOtherSidePhase.delta().purgeFPError();
         
         if (loopCount > 1 && !lastThisSidePhaseDelta.isIdentity() || !lastOtherSidePhaseDelta.isIdentity()) {

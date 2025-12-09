@@ -296,7 +296,7 @@ public class DQuaternion {
     @Override
     public String toString() {
         Vec3 rotatingAxis = getRotatingAxis();
-        return String.format("Rotates %.3f degrees along (%.3f %.3f %.3f) Quaternion:(%.3f %.3f %.3f %.3f)",
+        return "Rotates %.3f degrees along (%.3f %.3f %.3f) Quaternion:(%.3f %.3f %.3f %.3f)".formatted(
             getRotatingAngleDegrees(), rotatingAxis.x, rotatingAxis.y, rotatingAxis.z, x, y, z, w
         );
     }

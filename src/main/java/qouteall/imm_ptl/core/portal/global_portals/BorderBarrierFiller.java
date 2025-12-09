@@ -147,7 +147,7 @@ public class BorderBarrierFiller {
             columns -> {
                 if (McHelper.getServerGameTime() % 20 == 0) {
                     informer.accept(Component.literal(
-                        String.format("Progress: %d / %d", columns, totalColumns)
+                        "Progress: %d / %d".formatted(columns, totalColumns)
                     ));
                 }
                 return true;

@@ -248,8 +248,7 @@ public class StableClientTimer {
         if (Math.abs(shownOffset) < 0.0001) {
             shownOffset = 0;
         }
-        return String.format(
-            "Stable Timer Offset %.3f", shownOffset
+        return "Stable Timer Offset %.3f".formatted(shownOffset
         );
     }
 }

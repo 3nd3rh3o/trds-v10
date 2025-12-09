@@ -178,7 +178,7 @@ public class PortalDebugCommands {
                     
                     context.getSource().sendSuccess(
                         () -> Component.literal(
-                            String.format("Memory: % 2d%% %03d/%03dMB", o * 100L / l, toMiB(o), toMiB(l))
+                            "Memory: % 2d%% %03d/%03dMB".formatted(o * 100L / l, toMiB(o), toMiB(l))
                         ),
                         false
                     );
@@ -380,8 +380,7 @@ public class PortalDebugCommands {
                 ServerPlayer player = context.getSource().getPlayerOrException();
                 
                 CHelper.printChat(
-                    String.format(
-                        "On Server %s %s removal:%s added:%s age:%s",
+                    "On Server %s %s removal:%s added:%s age:%s".formatted(
                         player.level().dimension().location(),
                         player.blockPosition(),
                         player.getRemovalReason(),
@@ -720,8 +719,7 @@ public class PortalDebugCommands {
         else {
             McHelper.serverLog(
                 player,
-                String.format(
-                    "chunk holder level:%s %s",
+                "chunk holder level:%s %s".formatted(
                     chunkHolder.getTicketLevel(),
                     chunk == null ? "" : chunk.getFullStatus()
                 )
@@ -751,8 +749,7 @@ public class PortalDebugCommands {
         ImmPtlChunkTickets dimTicketManager = ImmPtlChunkTickets.get(world);
         LevelEntityGetter<Entity> entityLookup = ((IEWorld) world).portal_getEntityLookup();
         
-        subStr.append(String.format(
-            "%s:\nImmPtl Tracked Chunks: %s\nImmPtl Loading Ticket:%s\nChunks: %s\nEntities:%s Entity Sections:%s\n",
+        subStr.append("%s:\nImmPtl Tracked Chunks: %s\nImmPtl Loading Ticket:%s\nChunks: %s\nEntities:%s Entity Sections:%s\n".formatted(
             world.dimension().location(),
             ImmPtlChunkTracking.getLoadedChunkNum(world.dimension()),
             dimTicketManager.getLoadedChunkNum(),
@@ -763,8 +760,7 @@ public class PortalDebugCommands {
         
         PersistentEntitySectionManager<Entity> entityManager = ((IEServerWorld) world).ip_getEntityManager();
         entityManager.saveAll();
-        subStr.append(String.format(
-            "Entity Manager: %s\n",
+        subStr.append("Entity Manager: %s\n".formatted(
             entityManager.gatherStats()
         ));
         

@@ -179,16 +179,16 @@ public class ProtoPortal {
         
         if (firstSide.rightBottom == null) {
             String widthStr = pendingState == null ? "?" :
-                String.format("%.3f", Objects.requireNonNull(pendingState.firstSide).getWidth());
+                "%.3f".formatted(Objects.requireNonNull(pendingState.firstSide).getWidth());
             
             return Component.translatable("imm_ptl.wand.first_side_right_bottom", widthStr)
                 .append(undoPrompt);
         }
         if (firstSide.leftTop == null) {
             String widthStr = pendingState == null ? "?" :
-                String.format("%.3f", Objects.requireNonNull(pendingState.firstSide).getWidth());
+                "%.3f".formatted(Objects.requireNonNull(pendingState.firstSide).getWidth());
             String heightStr = pendingState == null ? "?" :
-                String.format("%.3f", Objects.requireNonNull(pendingState.firstSide).getHeight());
+                "%.3f".formatted(Objects.requireNonNull(pendingState.firstSide).getHeight());
             
             return Component.translatable("imm_ptl.wand.first_side_left_up", widthStr, heightStr)
                 .append(undoPrompt);
@@ -211,9 +211,9 @@ public class ProtoPortal {
                 double heightDivWidth = pendingState.firstSide.getHeightDivWidth();
                 double height = width * heightDivWidth;
                 double scale = width / pendingState.firstSide.getWidth();
-                widthStr = String.format("%.3f", width);
-                heightStr = String.format("%.3f", height);
-                scaleStr = String.format("%.3f", scale);
+                widthStr = "%.3f".formatted(width);
+                heightStr = "%.3f".formatted(height);
+                scaleStr = "%.3f".formatted(scale);
             }
             
             return Component.translatable(

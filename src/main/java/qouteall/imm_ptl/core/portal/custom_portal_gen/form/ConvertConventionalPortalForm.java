@@ -94,8 +94,7 @@ public class ConvertConventionalPortalForm extends PortalGenForm {
             return false;
         }
         
-        Helper.log(String.format(
-            "Trying to convert conventional portal %s -> %s by %s (%d %d %d)",
+        Helper.log("Trying to convert conventional portal %s -> %s by %s (%d %d %d)".formatted(
             fromWorld.dimension().location(),
             toWorld.dimension().location(),
             player.getName().getContents(),

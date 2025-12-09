@@ -59,9 +59,9 @@ public class OverlayRendering {
             return;
         }
         
-        if (portal instanceof BreakablePortalEntity) {
+        if (portal instanceof BreakablePortalEntity entity) {
             renderBreakablePortalOverlay(
-                ((BreakablePortalEntity) portal),
+                entity,
                 RenderStates.getPartialTick(),
                 matrixStack,
                 vertexConsumerProvider

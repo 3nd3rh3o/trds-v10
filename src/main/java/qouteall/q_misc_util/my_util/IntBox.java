@@ -517,8 +517,7 @@ public class IntBox {
     
     @Override
     public String toString() {
-        return String.format(
-            "(%d %d %d)-(%d %d %d)",
+        return "(%d %d %d)-(%d %d %d)".formatted(
             l.getX(), l.getY(), l.getZ(),
             h.getX(), h.getY(), h.getZ()
         );

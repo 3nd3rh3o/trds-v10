@@ -516,8 +516,8 @@ public class Helper {
     public static ResourceKey<Level> getWorldId(CompoundTag tag, String tagName) {
         Tag term = tag.get(tagName);
         
-        if (term instanceof StringTag) {
-            String id = ((StringTag) term).getAsString();
+        if (term instanceof StringTag stringTag) {
+            String id = stringTag.getAsString();
             return dimIdToKey(id);
         }
         
@@ -1064,12 +1064,12 @@ public class Helper {
     
     public static <T> T firstOf(List<T> list) {
         Validate.isTrue(!list.isEmpty());
-        return list.get(0);
+        return list.getFirst();
     }
     
     public static <T> T lastOf(List<T> list) {
         Validate.isTrue(!list.isEmpty());
-        return list.get(list.size() - 1);
+        return list.getLast();
     }
     
     @Nullable
@@ -1140,7 +1140,7 @@ public class Helper {
             return null;
         }
         else {
-            return list.get(0);
+            return list.getFirst();
         }
     }
     

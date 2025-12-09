@@ -221,7 +221,7 @@ public class NormalAnimation implements PortalAnimationDriver {
         if (phases.isEmpty()) {
             return null;
         }
-        return phases.get(phases.size() - 1).delta();
+        return phases.getLast().delta();
     }
     
     @Override

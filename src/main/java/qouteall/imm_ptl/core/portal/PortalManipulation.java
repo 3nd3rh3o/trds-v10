@@ -384,7 +384,7 @@ public class PortalManipulation {
         
         Level world = hitPortals.isEmpty()
             ? entity.level()
-            : hitPortals.get(hitPortals.size() - 1).getDestinationWorld();
+            : hitPortals.getLast().getDestinationWorld();
         
         Portal portal = new Portal(Portal.ENTITY_TYPE, world);
         

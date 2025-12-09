@@ -186,9 +186,9 @@ public class CrossPortalEntityRenderer {
             //correctly rendering it needs two culling planes
             //use some rough check to work around
             
-            if (renderingPortal instanceof Portal) {
-                if (!Portal.isFlippedPortal(((Portal) renderingPortal), collidingPortal)
-                    && !Portal.isReversePortal(((Portal) renderingPortal), collidingPortal)
+            if (renderingPortal instanceof Portal portal) {
+                if (!Portal.isFlippedPortal(portal, collidingPortal)
+                    && !Portal.isReversePortal(portal, collidingPortal)
                 ) {
                     Vec3 cameraPos = client.gameRenderer.getMainCamera().getPosition();
                     
@@ -381,8 +381,8 @@ public class CrossPortalEntityRenderer {
             
             // client colliding portal update is not immediate
             if (collidingPortal != null && !(entity instanceof LocalPlayer)) {
-                if (renderingPortal instanceof Portal) {
-                    if (!Portal.isReversePortal(collidingPortal, ((Portal) renderingPortal))) {
+                if (renderingPortal instanceof Portal portal) {
+                    if (!Portal.isReversePortal(collidingPortal, portal)) {
                         Vec3 cameraPos = PortalRenderer.client.gameRenderer.getMainCamera().getPosition();
                         
                         boolean isHidden = cameraPos.subtract(collidingPortal.getOriginPos())

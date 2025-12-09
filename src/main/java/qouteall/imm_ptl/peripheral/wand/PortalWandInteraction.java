@@ -304,8 +304,8 @@ public class PortalWandInteraction {
         public Portal getPortal() {
             Entity entity = McHelper.getServerWorld(dimension).getEntity(portalId);
             
-            if (entity instanceof Portal) {
-                return (Portal) entity;
+            if (entity instanceof Portal portal) {
+                return portal;
             }
             else {
                 return null;

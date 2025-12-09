@@ -104,8 +104,7 @@ public class ImmPtlChunkTracking {
         
         @Override
         public String toString() {
-            return String.format(
-                "%s (%d,%d) distance:%d valid:%s loaded:%s",
+            return "%s (%d,%d) distance:%d valid:%s loaded:%s".formatted(
                 dimension.location(),
                 ChunkPos.getX(chunkPos),
                 ChunkPos.getZ(chunkPos),

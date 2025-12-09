@@ -99,8 +99,7 @@ public class PortalPlaceholderBlock extends Block {
         BlockPos neighborPos
     ) {
         if (!worldAccess.isClientSide()) {
-            if (worldAccess instanceof Level) {
-                Level world = (Level) worldAccess;
+            if (worldAccess instanceof Level world) {
                 
                 world.getProfiler().push("portal_placeholder");
                 

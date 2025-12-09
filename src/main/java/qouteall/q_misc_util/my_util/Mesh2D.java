@@ -1400,8 +1400,7 @@ public class Mesh2D {
             double p2x = pointCoords.getDouble(p2Index * 2);
             double p2y = pointCoords.getDouble(p2Index * 2 + 1);
             
-            sb.append(String.format(
-                "%d: (%.3f, %.3f) (%.3f, %.3f) (%.3f, %.3f)\n",
+            sb.append("%d: (%.3f, %.3f) (%.3f, %.3f) (%.3f, %.3f)\n".formatted(
                 triangleIndex, p0x, p0y, p1x, p1y, p2x, p2y
             ));
         }
@@ -1744,7 +1743,7 @@ public class Mesh2D {
         try {
             // runs a python script that uses matplotlib
             // must install python and matplotlib
-            Process process = Runtime.getRuntime().exec("python ./misc/visualize_mesh.py");
+            Process process = Runtime.getRuntime().exec(new String[]{"python", "./misc/visualize_mesh.py"});
         }
         catch (IOException e) {
             throw new RuntimeException(e);

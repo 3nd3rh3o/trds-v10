@@ -385,8 +385,8 @@ public class GlobalPortalStorage extends SavedData {
         if (world.isClientSide()) {
             result = CHelper.getClientGlobalPortal(world);
         }
-        else if (world instanceof ServerLevel) {
-            result = get(((ServerLevel) world)).data;
+        else if (world instanceof ServerLevel level) {
+            result = get(level).data;
         }
         else {
             result = null;

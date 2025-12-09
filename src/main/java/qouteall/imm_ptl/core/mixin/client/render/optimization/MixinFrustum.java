@@ -45,8 +45,8 @@ public class MixinFrustum implements IEFrustum {
         at = @At("RETURN")
     )
     private void onFrustumCopy(Frustum other, CallbackInfo ci) {
-        if (other instanceof IEFrustum) {
-            MixinFrustum otherFrustum = (MixinFrustum) (Object) other;
+        if (other instanceof IEFrustum frustum) {
+            MixinFrustum otherFrustum = (MixinFrustum) frustum;
             portal_camX = otherFrustum.portal_camX;
             portal_camY = otherFrustum.portal_camY;
             portal_camZ = otherFrustum.portal_camZ;

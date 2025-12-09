@@ -220,7 +220,7 @@ public class PortalRendering {
             return false;
         }
         
-        Portal last = portalLayers.get(portalLayers.size() - 1);
+        Portal last = portalLayers.getLast();
         Portal secondLast = portalLayers.get(portalLayers.size() - 2);
         
         return toRender == secondLast && Portal.isReversePortal(toRender, last);

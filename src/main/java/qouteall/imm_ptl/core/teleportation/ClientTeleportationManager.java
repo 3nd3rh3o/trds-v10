@@ -513,8 +513,7 @@ public class ClientTeleportationManager {
             player.startRiding(vehicle, true);
         }
         
-        Helper.log(String.format(
-            "Client Changed Dimension from %s to %s time: %s age: %s",
+        Helper.log("Client Changed Dimension from %s to %s time: %s age: %s".formatted(
             fromDimension.location(),
             toDimension.location(),
             tickTimeForTeleportation,

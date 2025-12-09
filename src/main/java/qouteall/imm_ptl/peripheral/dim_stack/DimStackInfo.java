@@ -123,7 +123,7 @@ public class DimStackInfo {
             }
         }
         
-        if (!GlobalPortalStorage.getGlobalPortals(McHelper.getServerWorld(entries.get(0).getDimension())).isEmpty()) {
+        if (!GlobalPortalStorage.getGlobalPortals(McHelper.getServerWorld(entries.getFirst().getDimension())).isEmpty()) {
             Helper.err("There are already global portals when initializing dimension stack");
             McHelper.sendMessageToFirstLoggedPlayer(server, Component.literal(
                 "Failed to apply dimension stack because there are already global portals when initializing dimension stack"
@@ -155,7 +155,7 @@ public class DimStackInfo {
         });
         
         if (loop) {
-            createConnectionBetween(entries.get(entries.size() - 1), entries.get(0), gravityTransform);
+            createConnectionBetween(entries.getLast(), entries.getFirst(), gravityTransform);
         }
         
         Map<ResourceKey<Level>, BlockState> bedrockReplacementMap = new HashMap<>();

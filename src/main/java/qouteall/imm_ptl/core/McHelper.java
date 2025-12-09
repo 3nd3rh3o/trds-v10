@@ -820,8 +820,8 @@ public class McHelper {
             return CHelper.getWorldEntityList(world);
         }
         else {
-            if (world instanceof ServerLevel) {
-                return ((ServerLevel) world).getAllEntities();
+            if (world instanceof ServerLevel level) {
+                return level.getAllEntities();
             }
             else {
                 return ((Iterable<Entity>) Collections.emptyList().iterator());

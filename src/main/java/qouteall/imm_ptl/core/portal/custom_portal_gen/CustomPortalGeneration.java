@@ -146,7 +146,7 @@ public class CustomPortalGeneration {
         if (!fromDimensions.isEmpty()) {
             return new CustomPortalGeneration(
                 Lists.newArrayList(toDimension),
-                fromDimensions.get(0),
+                fromDimensions.getFirst(),
                 spaceRatioTo,
                 spaceRatioFrom,
                 false,
@@ -239,7 +239,7 @@ public class CustomPortalGeneration {
         @Nullable Entity triggeringEntity
     ) {
         if (!fromDimensions.contains(world.dimension())) {
-            if (fromDimensions.get(0) != ANY_DIMENSION) {
+            if (fromDimensions.getFirst() != ANY_DIMENSION) {
                 return false;
             }
         }

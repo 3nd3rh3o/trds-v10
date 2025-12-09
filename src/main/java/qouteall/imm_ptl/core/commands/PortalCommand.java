@@ -145,9 +145,9 @@ public class PortalCommand {
     
     public static boolean canUsePortalCommand(CommandSourceStack commandSource) {
         Entity entity = commandSource.getEntity();
-        if (entity instanceof ServerPlayer) {
+        if (entity instanceof ServerPlayer player) {
             if (IPGlobal.easeCreativePermission) {
-                if (((ServerPlayer) entity).isCreative()) {
+                if (player.isCreative()) {
                     return true;
                 }
             }
@@ -1931,7 +1931,7 @@ public class PortalCommand {
             MyTaskList.oneShotTask(() -> {
                 Stream<IntBox> roomsStream = Stream.concat(
                     roomAreaList.stream(),
-                    Stream.of(roomAreaList.get(0))
+                    Stream.of(roomAreaList.getFirst())
                 );
                 Helper.wrapAdjacentAndMap(
                     roomsStream, Pair::new
@@ -2044,8 +2044,7 @@ public class PortalCommand {
         );
         
         for (Entity portalEntity : entities) {
-            if (portalEntity instanceof Portal) {
-                Portal portal = (Portal) portalEntity;
+            if (portalEntity instanceof Portal portal) {
                 
                 invoker.accept(portal);
             }
@@ -2250,14 +2249,14 @@ public class PortalCommand {
         
         func.accept(
             Component.literal(
-                String.format("Orientation: %s", PortalAPI.getPortalOrientationQuaternion(portal))
+                "Orientation: %s".formatted(PortalAPI.getPortalOrientationQuaternion(portal))
             )
         );
         
         if (portal.getRotation() != null) {
             func.accept(
                 Component.literal(
-                    String.format("Rotating Transformation: %s",
+                    "Rotating Transformation: %s".formatted(
                         portal.getRotation()
                     )
                 )
@@ -2376,8 +2375,8 @@ public class PortalCommand {
         CommandSourceStack source = context.getSource();
         Entity entity = source.getEntity();
         
-        if (entity instanceof ServerPlayer) {
-            ServerPlayer player = ((ServerPlayer) entity);
+        if (entity instanceof ServerPlayer serverPlayer) {
+            ServerPlayer player = serverPlayer;
             
             Portal portal = getPlayerPointingPortal(player, false);
             
@@ -2393,8 +2392,8 @@ public class PortalCommand {
                 processCommand.accept(portal);
             }
         }
-        else if (entity instanceof Portal) {
-            processCommand.accept(((Portal) entity));
+        else if (entity instanceof Portal portal) {
+            processCommand.accept(portal);
         }
         else {
             source.sendSuccess(() ->
@@ -2756,9 +2755,9 @@ public class PortalCommand {
                 player.sendSystemMessage(
                     Component.translatable(
                         "imm_ptl.sculpted",
-                        String.format("%.4f", areaBefore - areaAfter),
-                        String.format("%.4f", areaBefore),
-                        String.format("%.4f", areaAfter)
+                        "%.4f".formatted(areaBefore - areaAfter),
+                        "%.4f".formatted(areaBefore),
+                        "%.4f".formatted(areaAfter)
                     )
                 );
             }
