@@ -1,0 +1,140 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.exoshell_default.door.open": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"door_0": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-1, 0, 0]
+						}
+					}
+				},
+				"door_5": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-21, 0, 0]
+						}
+					}
+				},
+				"door_1": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-5, 0, 0]
+						}
+					}
+				},
+				"door_2": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-9, 0, 0]
+						}
+					}
+				},
+				"door_3": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-13, 0, 0]
+						}
+					}
+				},
+				"door_4": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [-17, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.exoshell_default.door.close": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"door_0": {
+					"position": {
+						"0.0": {
+							"vector": [-1, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"door_1": {
+					"position": {
+						"0.0": {
+							"vector": [-5, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"door_2": {
+					"position": {
+						"0.0": {
+							"vector": [-9, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"door_3": {
+					"position": {
+						"0.0": {
+							"vector": [-13, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"door_4": {
+					"position": {
+						"0.0": {
+							"vector": [-17, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"door_5": {
+					"position": {
+						"0.0": {
+							"vector": [-21, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

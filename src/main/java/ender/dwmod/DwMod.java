@@ -3,6 +3,7 @@ package ender.dwmod;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ender.dwmod.entities.EntityInit;
 
 /**
  * Minimal bootstrap for the custom mod id "dwmod". Extend this class with your
@@ -16,5 +17,6 @@ public class DwMod implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("dwmod loaded.");
+        EntityInit.init();
     }
 }
