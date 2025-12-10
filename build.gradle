@@ -14,6 +14,27 @@ base {
     archivesName = project.archives_base_name
 }
 
+sourceSets {
+    // dwmod is a separate mod id packaged in the same jar; reuse main classes (no recompile)
+    dwmod {
+        java.srcDirs = [] // avoid duplicating compiled classes from main
+        resources.srcDir 'src/dwmod/resources'
+
+        // rely on main outputs for classes; keep them on the classpath
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += sourceSets.main.output + configurations.runtimeClasspath
+    }
+}
+
+configurations {
+    // keep Gravity Changer off the dev/runtime classpath unless explicitly enabled
+    developmentRuntimeClasspath {
+        if (!project.enable_gravity_changer.equals('true')) {
+            exclude group: "com.github.qouteall", module: "GravityChanger"
+        }
+    }
+}
+
 repositories {
     flatDir {
         dirs 'deps'
@@ -57,11 +78,41 @@ repositories {
     // geckolib, for testing with portal gun
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
 
-
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'GeckoLib'
+                url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+            }
+        }
+        filter { 
+            includeGroup('software.bernie.geckolib')
+        }
+    }
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/imm_ptl.accesswidener")
+
+    mods {
+        immersive_portals {
+            sourceSet sourceSets.main
+        }
+        dwmod {
+            sourceSet sourceSets.dwmod
+        }
+    }
+
+    // ✅ inclure dwmod sur le classpath des runs dev/debug
+    runs.configureEach {
+        source sourceSets.dwmod
+    }
+}
+
+// inclure les ressources dwmod (fabric.mod.json, assets, mixins) dans le jar dev/remappé
+jar {
+    from(sourceSets.dwmod.output) // only resources (no classes)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 dependencies {
@@ -89,9 +140,11 @@ dependencies {
     modCompileOnly "maven.modrinth:modmenu:${modmenu_version}"
     modLocalRuntime "maven.modrinth:modmenu:${modmenu_version}"
 
-    modCompileOnly "${project.sodium_path}"
+    modImplementation "${project.sodium_path}"
+    include "${project.sodium_path}"
 
-    modCompileOnly "${project.iris_path}"
+    modImplementation "${project.iris_path}"
+    include "${project.iris_path}"
 
     modCompileOnly("com.github.qouteall:GravityChanger:${gravity_changer_version}") {
         exclude(group: "net.fabricmc.fabric-api")
@@ -103,30 +156,23 @@ dependencies {
     }
     include("com.github.iPortalTeam:DimLib:${dimlib_version}")
 
+    modImplementation("software.bernie.geckolib:geckolib-fabric-1.21.1:${geckolib_version}") {
+        transitive(false)
+    }
+    include("software.bernie.geckolib:geckolib-fabric-1.21.1:${geckolib_version}")
+
     // put these into inner mod to reduce duplicate MC jar
 
-    if (project.enable_sodium.equals('true')) {
-        modLocalRuntime "${project.sodium_path}"
-    }
+    modLocalRuntime "${project.sodium_path}"
 
-    if (project.enable_iris.equals('true')) {
-        modLocalRuntime "${project.iris_path}"
-        implementation "org.anarres:jcpp:1.4.14" // for iris
-        implementation 'io.github.douira:glsl-transformer:2.0.0-pre13' // for iris
-        implementation 'org.antlr:antlr4-runtime:4.11.1' // for iris
-    }
+    modLocalRuntime "${project.iris_path}"
+    implementation "org.anarres:jcpp:1.4.14" // for iris
+    implementation 'io.github.douira:glsl-transformer:2.0.0-pre13' // for iris
+    implementation 'org.antlr:antlr4-runtime:4.11.1' // for iris
 
-    if (project.enable_gravity_changer.equals('true')) {
-        modLocalRuntime("com.github.qouteall:GravityChanger:${gravity_changer_version}") {
-            exclude(group: "net.fabricmc.fabric-api")
-        }
-    }
 
-    if (project.enable_geckolib.equals('true')) {
-        // for testing portal gun using dev jar
-        modLocalRuntime('software.bernie.geckolib:geckolib-fabric-1.20:4.2') {
-            transitive(false)
-        }
+    modLocalRuntime("software.bernie.geckolib:geckolib-fabric-1.21.1:${geckolib_version}") {
+        transitive(false)
     }
 
     if (project.enable_test_mod.equals('true')) {
@@ -146,7 +192,7 @@ dependencies {
 
             modImplementation name
         }
-    }
+    } 
     testImplementation(platform('org.junit:junit-bom:5.10.0'))
     testImplementation('org.junit.jupiter:junit-jupiter')
 }
@@ -177,7 +223,7 @@ java {
 // change the output file name
 remapJar {
     afterEvaluate {
-        archiveFileName = "${project.archives_base_name}-${project.mod_version}-mc${project.minecraft_version}-fabric.jar"
+        archiveFileName = "dwmod-${project.dwmod_version}-mc${project.minecraft_version}-fabric.jar"
     }
 }
 
@@ -248,4 +294,15 @@ publishMods {
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
         commitish = "${project.git_branch}"
     }
+}
+
+// Process dwmod resources and keep version expansion aligned with main mod
+tasks.named('processDwmodResources') {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

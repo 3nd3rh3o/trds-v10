@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "dwmod",
+  "version": "12.0.0",
+  "name": "DwMod",
+  "description": "Minimal template mod stub for DW.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["ender.dwmod.DwMod"],
+    "client" : ["client.ender.dwmod.DwModClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": ["1.21", "1.21.1"],
+    "fabric-api": "*"
+  }
+}
