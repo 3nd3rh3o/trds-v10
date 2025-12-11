@@ -39,6 +39,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
     
     public TardisEntity(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
+        hasImpulse = true;
     }
     
     @Override
@@ -78,14 +79,20 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
     //          If falling => tp portal to the correct relative position
     //      if door closed => if portal is present => remove portal
     @Override
-    public void tick() { // FIXME - pos and rot not properly synced clientside
-        if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0) {
-            this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
-        }
-        if (this.getRotationVector().y != 0) {
-            this.setYRot(0f);
-        }
+    public void tick() { // FIXME - pos and rot not properly synced clientside on spawn.
         super.tick();
+        if (onGround()) 
+            if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0) {
+                this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
+                this.setYRot(0f);
+                this.setYHeadRot(0f);
+                if (!level().isClientSide())
+                    TardisRegisties.getTardis(ID).updatePosition(this);
+                this.hasImpulse = true; // inform MC that position changed to update clients
+            }
+        else
+            if (!level().isClientSide() && !onGround())
+                TardisRegisties.getTardis(ID).updatePosition(this);
     }
 
     // override damages, unless if done by command or in mod logic
@@ -106,13 +113,13 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
     // make entity solid to other entities so they can walk on it
     @Override
     public boolean isPushable() {
-        return true;
+        return !onGround();
     }
 
     // prevent player entering aabb while coliding
     @Override
     public boolean canBeCollidedWith() {
-        return true;
+        return !onGround();
     }
 
     // make entity immovable by other entities

@@ -35,7 +35,7 @@ public final class TardisRegisties {
 
     public static Tardis createTardis(TardisEntity entity)
     {
-        final Tardis t = Tardis.create(freeID());
+        final Tardis t = Tardis.create(freeID(), entity.position(), entity.level().dimension());
         tardis.add(t);
         DwMod.LOGGER.info("Triggered gen!");
         return t;

@@ -10,6 +10,9 @@
     "main": ["ender.dwmod.DwMod"],
     "client" : ["client.ender.dwmod.DwModClient"]
   },
+  "mixins": [
+    "dwmod.mixin.json"
+  ],
   "depends": {
     "fabricloader": ">=0.14.0",
     "minecraft": ["1.21", "1.21.1"],
