@@ -1,9 +1,11 @@
 package ender.dwmod.entities.tardis.exoshell;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.google.common.primitives.UnsignedInteger;
 
+import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.tardis.TardisRegisties;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
@@ -15,6 +17,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
@@ -31,7 +34,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 // Set entity from entity event => NOT OK
 // Set TardisData from entity event => ok but is done via a trigger on the Tardis Instance and is server side only.
 //  if in client => use a packet ! (player click ? but should be handled by minecraft so a bit pointless)
-public class TardisEntity extends LivingEntity implements GeoEntity {
+// TODO - add block spawning depending on door state, and falling or not.
+public class TardisEntity extends LivingEntity implements GeoEntity, IMultiCollidable {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
     private UnsignedInteger ID;
@@ -79,7 +83,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
     //          If falling => tp portal to the correct relative position
     //      if door closed => if portal is present => remove portal
     @Override
-    public void tick() { // FIXME - pos and rot not properly synced clientside on spawn.
+    public void tick() {
         super.tick();
         if (onGround()) 
             if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0) {
@@ -154,5 +158,18 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
         super.die(cause);
         if (ID != null) // ensure server side
             TardisRegisties.deleteTardis(ID);
+    }
+
+    @Override // TODO - add actual colliders depending on state
+                // and make the program use them !
+    public List<AABB> getColliders() 
+    {
+        if (onGround())
+            return List.of(this.getBoundingBox());
+        else
+            return new ArrayList<AABB>()
+            {
+
+            };
     }
 }
