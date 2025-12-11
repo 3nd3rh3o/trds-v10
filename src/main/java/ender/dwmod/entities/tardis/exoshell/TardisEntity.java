@@ -2,6 +2,10 @@ package ender.dwmod.entities.tardis.exoshell;
 
 import java.util.ArrayList;
 
+import com.google.common.primitives.UnsignedInteger;
+
+import ender.dwmod.tardis.TardisRegisties;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -20,7 +24,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 // TODO - add Tracker for variables. 
 //      (server) TardisData -> (server) Entity -> (on change!)(client) Entity 
 //      also remember to send update packets to trigger animations.
-// TardisData should be in a world capability, and saved with the world data, to allow persistence of bigger nbt on a centralized place.
+// TardisData are in a world capability, and saved with the world data, to allow persistence of bigger nbt on a centralized place.
 // Anything related to a Tardis(not entity) instance must NEVER handle data storage! they are only display and interaction proxies.
 // So read state => ok
 // Set var(TardisData) => ok
@@ -29,6 +33,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 //  if in client => use a packet ! (player click ? but should be handled by minecraft so a bit pointless)
 public class TardisEntity extends LivingEntity implements GeoEntity {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    private UnsignedInteger ID;
 
     
     public TardisEntity(EntityType<? extends LivingEntity> entityType, Level level) {
@@ -72,7 +78,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
     //          If falling => tp portal to the correct relative position
     //      if door closed => if portal is present => remove portal
     @Override
-    public void tick() {
+    public void tick() { // FIXME - pos and rot not properly synced clientside
         if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0) {
             this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
         }
@@ -115,4 +121,31 @@ public class TardisEntity extends LivingEntity implements GeoEntity {
         return;
     }
     
+    // On load ID from NBT
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        CompoundTag tardisData = compound.getCompound("TardisData");
+        if (!tardisData.contains("ID"))
+            ID = TardisRegisties.createTardis(this).id(); // create new Tardis on spawn
+        else 
+            ID = UnsignedInteger.fromIntBits(tardisData.getInt("ID")); // just regular loading, not a spawn
+        super.readAdditionalSaveData(compound);
+    }
+
+    // On save ID to NBT
+    @Override
+    public void addAdditionalSaveData(CompoundTag compound) {
+        CompoundTag tardisData = new CompoundTag();
+        tardisData.putInt("ID", ID.intValue());
+        compound.put("TardisData", tardisData);
+        super.addAdditionalSaveData(compound);
+    }
+
+    // On death remove Tardis from registries
+    @Override
+    public void die(DamageSource cause) {
+        super.die(cause);
+        if (ID != null) // ensure server side
+            TardisRegisties.deleteTardis(ID);
+    }
 }
