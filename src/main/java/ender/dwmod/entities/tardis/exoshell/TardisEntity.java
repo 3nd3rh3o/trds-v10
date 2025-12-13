@@ -40,12 +40,25 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
 
     private UnsignedInteger ID;
 
+    private static final List<AABB> PHYSIC_COLLIDERS;
+
     
     public TardisEntity(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
         hasImpulse = true;
     }
+
     
+    
+    @Override
+    public AABB getBoundingBox() {
+        if (!level().isClientSide)
+            return getColliders().get(0).move(getX(), getY(), getZ());
+        return super.getBoundingBox();
+    }
+
+
+
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return geoCache;
@@ -114,16 +127,18 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
         return;
     }
 
+    
+
     // make entity solid to other entities so they can walk on it
     @Override
     public boolean isPushable() {
-        return !onGround();
+        return false;
     }
 
     // prevent player entering aabb while coliding
     @Override
     public boolean canBeCollidedWith() {
-        return !onGround();
+        return true;
     }
 
     // make entity immovable by other entities
@@ -152,6 +167,11 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
         super.addAdditionalSaveData(compound);
     }
 
+    @Override
+    protected void doPush(Entity entity) {
+        return;
+    }
+
     // On death remove Tardis from registries
     @Override
     public void die(DamageSource cause) {
@@ -164,12 +184,20 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
                 // and make the program use them !
     public List<AABB> getColliders() 
     {
-        if (onGround())
-            return List.of(this.getBoundingBox());
-        else
-            return new ArrayList<AABB>()
-            {
+        return PHYSIC_COLLIDERS;
+    }
 
-            };
+
+    
+    // TODO - change to a switch and add correct values
+    static {
+            // SOUTH - DEFAULT / DOOR CLOSED
+        PHYSIC_COLLIDERS = List.of(
+            new AABB(-0.875, 0, -0.875, 0.875, 0.125, 0.875), // base
+            new AABB(-0.875, 0.125, -0.875, -0.75, 2.875, 0.875), // left
+            new AABB(0.75, 0.125, -0.875, 0.875, 2.875, 0.875), // right
+            new AABB(-0.75, 0.125, -0.875, 0.75, 2.875, -0.75), // back
+            new AABB(-0.875, 2.875, -0.875, 0.875, 3, 0.875) // roof
+        );
     }
 }

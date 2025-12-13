@@ -3,7 +3,8 @@
     "package": "ender.dwmod.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "PlayerMixin"
+        "EntityGetterMixin",
+        "LivingEntityMixin"
     ],
     "injectors": {
         "defaultRequire": 1
