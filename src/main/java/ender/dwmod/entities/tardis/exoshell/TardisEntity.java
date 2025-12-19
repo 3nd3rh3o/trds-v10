@@ -34,7 +34,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 // Set entity from entity event => NOT OK
 // Set TardisData from entity event => ok but is done via a trigger on the Tardis Instance and is server side only.
 //  if in client => use a packet ! (player click ? but should be handled by minecraft so a bit pointless)
-// TODO - add block spawning depending on door state, and falling or not.
 public class TardisEntity extends LivingEntity implements GeoEntity, IMultiCollidable {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 

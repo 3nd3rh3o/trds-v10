@@ -32,7 +32,6 @@ public interface EntityGetterMixin {
         }
 
         EntityGetter self = (EntityGetter) (Object) this;
-        DwMod.LOGGER.info("Checking isUnobstructed for entity: {}", entity);
         for (Entity entity2 : self.getEntities(entity, shape.bounds())) {
 
             if (entity2.isRemoved()) {
@@ -57,7 +56,6 @@ public interface EntityGetterMixin {
                             Shapes.create(worldAabb),
                             BooleanOp.AND
                         )) {
-                        DwMod.LOGGER.info("Obstruction detected with multi-collider entity: {}", entity2);
                         obstructed = true;
                         break;
                     }
@@ -66,8 +64,6 @@ public interface EntityGetterMixin {
                 if (obstructed) {
                     return false;
                 }
-
-                DwMod.LOGGER.info("No obstruction detected with multi-collider entity: {}", entity2);
                 continue;
             }
 

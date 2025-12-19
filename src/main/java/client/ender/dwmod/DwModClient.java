@@ -5,8 +5,10 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import client.ender.dwmod.blockEntity.console.DefaultConsoleRenderer;
 import client.ender.dwmod.entities.tardisEntity.TardisEntityRenderer;
 import ender.dwmod.DwMod;
+import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.entities.EntityInit;
 import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
@@ -18,6 +20,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -30,8 +33,8 @@ public class DwModClient implements net.fabricmc.api.ClientModInitializer {
     public void onInitializeClient() {
         LOGGER.info("dwmod client loaded.");
         
-        EntityRendererRegistry.register(EntityInit.TARDIS, (ctx) -> new TardisEntityRenderer(ctx));
-
+        EntityRendererRegistry.register(EntityInit.TARDIS, TardisEntityRenderer::new);
+        BlockEntityRenderers.register(BlockEntityInit.DEFAULT_CONSOLE_BE, DefaultConsoleRenderer::new);
 
 
 

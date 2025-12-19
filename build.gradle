@@ -103,7 +103,6 @@ loom {
         }
     }
 
-    // ✅ inclure dwmod sur le classpath des runs dev/debug
     runs.configureEach {
         source sourceSets.dwmod
     }

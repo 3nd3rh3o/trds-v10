@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.block.BlockInit;
 import ender.dwmod.entities.EntityInit;
 import ender.dwmod.tardis.TardisRegisties;
@@ -18,6 +19,7 @@ public class DwMod implements ModInitializer {
     public void onInitialize() {
         EntityInit.init();
         BlockInit.init();
+        BlockEntityInit.registerBlockEntities();
 
         // On world load clear Tardis registries.
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> TardisRegisties.onWorldJoin(server));
