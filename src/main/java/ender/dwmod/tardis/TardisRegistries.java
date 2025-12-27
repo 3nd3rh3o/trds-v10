@@ -8,8 +8,10 @@ import ender.dwmod.DwMod;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
 import ender.dwmod.tardis.networking.TardisDataSyncS2C;
 import ender.dwmod.tardis.networking.TardisUpdateValueS2C;
+import ender.dwmod.tardis.systems.architecturalReconfiguration.Room;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
@@ -95,7 +97,9 @@ public final class TardisRegistries {
     }
 
 
-    public static void deleteTardis(UnsignedInteger iD) { // Trigger cleanup of internal dimension etc....
+    public static void deleteTardis(UnsignedInteger iD, MinecraftServer server) {
+        // Trigger cleanup of internal dimension etc....
+        getTardis(iD).delete(server);
         tardis.removeIf(t -> t.id().equals(iD));
         DwMod.LOGGER.info("Tardis with ID " + iD + " deleted from registries.");
     }
@@ -107,5 +111,9 @@ public final class TardisRegistries {
 
     public static CustomPacketPayload createValueNotifyPacket(UnsignedInteger id, String category, String name, String value) {
         return new TardisUpdateValueS2C(id.intValue(), category, name, value);
+    }
+
+    public static Tardis get(BlockPos worldPosition) {
+        return getTardis(Room.worldPosToInstanceID(worldPosition));
     }
 }

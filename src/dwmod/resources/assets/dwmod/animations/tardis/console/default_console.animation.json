@@ -60,6 +60,60 @@
 					}
 				}
 			}
+		},
+		"animation.light_switch.set_on": {
+			"animation_length": 0.5,
+			"override_previous_animation": true,
+			"bones": {
+				"bone": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.5": {
+							"vector": [105, 0, 0],
+							"easing": "easeInQuad"
+						}
+					}
+				}
+			}
+		},
+		"animation.light_switch.idle_on": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"bone": {
+					"rotation": {
+						"vector": [105, 0, 0]
+					}
+				}
+			}
+		},
+		"animation.light_switch.set_off": {
+			"animation_length": 0.5,
+			"override_previous_animation": true,
+			"bones": {
+				"bone": {
+					"rotation": {
+						"0.0": {
+							"vector": [105, 0, 0]
+						},
+						"0.5": {
+							"vector": [0, 0, 0],
+							"easing": "easeOutQuad"
+						}
+					}
+				}
+			}
+		},
+		"animation.light_switch.idle_off": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"bone": {
+					"rotation": {
+						"vector": [0, 0, 0]
+					}
+				}
+			}
 		}
 	},
 	"geckolib_format_version": 2

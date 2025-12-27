@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import client.ender.dwmod.ClientTardisRegistries;
 import ender.dwmod.DwMod;
 import ender.dwmod.block.BlockEntityInit;
+import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.tardis.Interactible;
 import ender.dwmod.tardis.TardisRegistries;
 import ender.dwmod.utils.RayCastShape.Sphere;
@@ -49,7 +50,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
 
     private final List<Interactible> INTERACTIBLES = List.of( // use blockbench coords / 16 - (0, 0.5, 0)
         new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20), // door switch
-        new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 20) // light switch
+        new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 10) // light switch
     );
 
 
@@ -62,15 +63,17 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
 
     @Override
     public void registerControllers(ControllerRegistrar controllers) {
+        if (!level.dimension().equals(DimensionRegistry.VORTEX_DIMENSION_KEY))
+            return; // only animate in Tardis dimension
         controllers.add(
-            new AnimationController<>(this, "door_switch", 0, state -> {
+            new AnimationController<>(this, "door_switch", 1, state -> {
                 return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getDoorState()) || TardisRegistries.get(worldPosition).getDoorState()? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", DOOR_SWITCH_SET_ON)
             .triggerableAnim("set_off", DOOR_SWITCH_SET_OFF)
         );
         controllers.add(
-            new AnimationController<>(this, "light_switch", 0, state -> {
+            new AnimationController<>(this, "light_switch", 1, state -> {
                 return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getInternalLight()) || TardisRegistries.get(worldPosition).getInternalLight() ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", LIGHT_SWITCH_SET_ON)
@@ -100,32 +103,35 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
                 
             }
         }
-        switch (pH)
+        if (level.dimension().equals(DimensionRegistry.VORTEX_DIMENSION_KEY)) // only work in Tardis dimension
         {
-            case 0 -> {
-                if (!level.isClientSide && debugRayCast)
-                    DwMod.LOGGER.info("DefaultConsoleBE interacted : door switch");
-                
-                if (!level.isClientSide)
-                {
-                    TardisRegistries.get(worldPosition).toggleDoorState();
-                    triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getDoorState() ? "set_on" : "set_off");
+            switch (pH)
+            {
+                case 0 -> {
+                    if (!level.isClientSide && debugRayCast)
+                        DwMod.LOGGER.info("DefaultConsoleBE interacted : door switch");
+                    
+                    if (!level.isClientSide)
+                    {
+                        TardisRegistries.get(worldPosition).toggleDoorState(level.getServer());
+                        triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getDoorState() ? "set_on" : "set_off");
+                    }
                 }
-            }
-            case 1 -> {
-                if (!level.isClientSide && debugRayCast)
-                    DwMod.LOGGER.info("DefaultConsoleBE interacted : light switch");
-                
-                if (!level.isClientSide)
-                {
-                    TardisRegistries.get(worldPosition).toggleInternalLight();
-                    triggerAnimBroad("light_switch", TardisRegistries.get(worldPosition).getInternalLight() ? "set_on" : "set_off");
+                case 1 -> {
+                    if (!level.isClientSide && debugRayCast)
+                        DwMod.LOGGER.info("DefaultConsoleBE interacted : light switch");
+                    
+                    if (!level.isClientSide)
+                    {
+                        TardisRegistries.get(worldPosition).toggleInternalLight(level.getServer());
+                        triggerAnimBroad("light_switch", TardisRegistries.get(worldPosition).getInternalLight() ? "set_on" : "set_off");
+                    }
                 }
-            }
-            default -> {
-                // no interaction
-            }
+                default -> {
+                    // no interaction
+                }
 
+            }
         }
         if (pH != -1)
         {

@@ -3,13 +3,21 @@ package ender.dwmod.tardis.systems.architecturalReconfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.primitives.UnsignedInteger;
+
 import ender.dwmod.DwMod;
+import ender.dwmod.block.tardis.lamps.TardisLamp;
 import ender.dwmod.dimensions.DimensionRegistry;
+import ender.dwmod.tardis.TardisRegistries;
+import ender.dwmod.tardis.systems.ArchitecturalReconfiguration;
+import ender.dwmod.utils.Vec2IToInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 public class Room {
@@ -110,7 +118,7 @@ public class Room {
     }
 
     public void tick(MinecraftServer server) {
-
+        updateLighting(server);
     }
 
     public boolean shouldDeactivate(MinecraftServer server, List<Room> rooms) {
@@ -142,12 +150,15 @@ public class Room {
 
     public void postGeneration(MinecraftServer server, List<Room> rooms) {
         
+        // if console room, obligatory forceload
+        if (isConsoleRoom()) {
+            setForceLoad(server, worldPosition, size, true);
+        }
+        // else, if adjacent is active, forceload too
+        //TODO
 
-
-
-
-        // on finish, collect adjacent rooms if present, and update them
-
+        // on finish, collect adjacent rooms if present, and their registries
+        updateLighting(server);
     }
 
     public List<Room> roomsToSleep() {
@@ -165,5 +176,56 @@ public class Room {
 
     public String getStructureName() {
         return structureName;
+    }
+
+    public static UnsignedInteger worldPosToInstanceID(BlockPos worldPosition) {
+        long volumeX = Math.floorDiv(worldPosition.getX(), ArchitecturalReconfiguration.MAX_VOLUME_BLOCKS.getX());
+        long volumeZ = Math.floorDiv(worldPosition.getZ(), ArchitecturalReconfiguration.MAX_VOLUME_BLOCKS.getZ());
+        return UnsignedInteger.valueOf(Vec2IToInt.z2ToN(volumeX, volumeZ));
+    }
+
+    public void setInactive(MinecraftServer server) {
+        setForceLoad(server, worldPosition, size, false);
+    }
+
+
+
+
+    private void updateLighting(MinecraftServer server)
+    {
+        boolean lit = TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getInternalLight();
+        for (int x = 0; x < size.getX() * ArchitecturalReconfiguration.VOLUME_BLOCKS; x++)
+        {
+            for (int y = 0; y < size.getY() * ArchitecturalReconfiguration.VOLUME_BLOCKS; y++)
+            {
+                for (int z = 0; z < size.getZ() * ArchitecturalReconfiguration.VOLUME_BLOCKS; z++)
+                {
+                    BlockPos pos = worldPosition.offset(x, y, z);
+                    BlockState b = server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getBlockState(pos);
+                    if (b.getBlock() instanceof TardisLamp)
+                    {
+                        server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).setBlock(pos, b.setValue(TardisLamp.LIT, lit), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+        
+    }
+
+    private static void setForceLoad(MinecraftServer server, BlockPos worldPosition, Vec3i size, boolean forceload)
+    {
+        // Compute range of chunks to forceload from dimX and dimZ
+        int chunkXStart = Math.floorDiv(worldPosition.getX(), 16);
+        int chunkZStart = Math.floorDiv(worldPosition.getZ(), 16);
+        int chunkXEnd = Math.floorDiv(worldPosition.getX() + size.getX() * ArchitecturalReconfiguration.VOLUME_BLOCKS - 1, 16);
+        int chunkZEnd = Math.floorDiv(worldPosition.getZ() + size.getZ() * ArchitecturalReconfiguration.VOLUME_BLOCKS - 1, 16);
+
+        // Apply forceload or un-forceload
+        for (int cx = chunkXStart; cx <= chunkXEnd; cx++) {
+            for (int cz = chunkZStart; cz <= chunkZEnd; cz++) 
+            {
+                server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).setChunkForced(cx, cz, forceload);
+            }
+        }
     }
 }

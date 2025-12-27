@@ -23,9 +23,9 @@ public class ArchitecturalReconfiguration {
     // one volume is 32x32x32 blocks
     // the tardis interior 16 x 8 x 16 volumes. => 512 x 256 x 512 blocks
     private static final Vec3i MAX_VOLUME = new Vec3i(16, 8, 16);
-    private static final int VOLUME_BLOCKS = 32;
+    public static final int VOLUME_BLOCKS = 32;
 
-    private static final Vec3i MAX_VOLUME_BLOCKS = MAX_VOLUME.multiply(VOLUME_BLOCKS);
+    public static final Vec3i MAX_VOLUME_BLOCKS = MAX_VOLUME.multiply(VOLUME_BLOCKS);
 
 
     private final List<Room> activeRooms = new ArrayList<>();
@@ -212,6 +212,8 @@ public class ArchitecturalReconfiguration {
         for (int i = 0; i < standByRooms.size(); i++)
         {
             Room room = standByRooms.get(i);
+            room.tick(server);
+
             if (room.shouldActivate(server, rooms)) {
                 DwMod.LOGGER.info("Activating room " + room.getStructureName() + " at virtual position " + room.getVirtualPosition());
                 activeRooms.add(room);
@@ -228,6 +230,13 @@ public class ArchitecturalReconfiguration {
                 standByRooms.add(room);
             }
             roomPostGen.remove(room);
+        }
+    }
+
+    public void deleteAllRooms(MinecraftServer server) {
+        for (Room r : rooms)
+        {
+            r.setInactive(server);
         }
     }
 }

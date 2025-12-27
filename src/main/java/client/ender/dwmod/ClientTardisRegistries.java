@@ -57,6 +57,9 @@ public final class ClientTardisRegistries {
                             case "door_state" -> {
                                 t.clientSyncDoorState(EncodingHelpers.toBoolean(packet.value()));
                             }
+                            case "internal_light" -> {
+                                t.clientSyncInternalLight(EncodingHelpers.toBoolean(packet.value()));
+                            }
                         }
                     }
                 }

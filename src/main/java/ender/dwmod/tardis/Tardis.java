@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -127,9 +128,22 @@ public class Tardis {
 
     
 
-    public void toggleDoorState() {
+    public void toggleDoorState(MinecraftServer server) {
         doorState = !doorState;
-        TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState));
+        broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState)), server);
+    }
+
+
+    public void toggleInternalLight(MinecraftServer server) {
+        internalLight = !internalLight;
+        broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight)), server);
+    }
+
+    private static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
+        for (ServerPlayer player : PlayerLookup.all(server))
+        {
+            ServerPlayNetworking.send(player, packet);
+        }
     }
 
 
@@ -147,9 +161,12 @@ public class Tardis {
         doorState = boolean1;
     }
 
+    public void clientSyncInternalLight(boolean boolean1) {
+        internalLight = boolean1;
+    }
 
-    public void toggleInternalLight() {
-        internalLight = !internalLight;
-        TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight));
+
+    public void delete(MinecraftServer server) {
+        ars.deleteAllRooms(server);
     }
 }

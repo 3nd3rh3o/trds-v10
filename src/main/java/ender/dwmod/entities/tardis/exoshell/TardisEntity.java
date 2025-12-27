@@ -176,8 +176,8 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
-        if (ID != null) // ensure server side
-            TardisRegistries.deleteTardis(ID);
+        if (!level().isClientSide() && ID != null)
+            TardisRegistries.deleteTardis(ID, this.level().getServer());
     }
 
     @Override // TODO - add actual colliders depending on state
@@ -192,7 +192,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     // TODO - change to a switch and add correct values
     static {
             // SOUTH - DEFAULT / DOOR CLOSED
-        PHYSIC_COLLIDERS = List.of(
+        PHYSIC_COLLIDERS = List.of( // blockbench coords / 16
             new AABB(-0.875, 0, -0.875, 0.875, 0.125, 0.875), // base
             new AABB(-0.875, 0.125, -0.875, -0.75, 2.875, 0.875), // left
             new AABB(0.75, 0.125, -0.875, 0.875, 2.875, 0.875), // right

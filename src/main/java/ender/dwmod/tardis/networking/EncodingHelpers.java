@@ -17,4 +17,12 @@ public final class EncodingHelpers {
             Double.parseDouble(parts[2])
         );
     }
+
+    public static String fromBoolean(boolean doorState) {
+        return doorState ? "1" : "0";
+    }
+
+    public static boolean toBoolean(String value) {
+        return value.equals("1");
+    }
 }
