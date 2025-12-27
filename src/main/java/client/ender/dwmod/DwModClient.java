@@ -12,6 +12,7 @@ import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.entities.EntityInit;
 import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
+import ender.dwmod.tardis.TardisNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Camera;
@@ -35,6 +36,8 @@ public class DwModClient implements net.fabricmc.api.ClientModInitializer {
         
         EntityRendererRegistry.register(EntityInit.TARDIS, TardisEntityRenderer::new);
         BlockEntityRenderers.register(BlockEntityInit.DEFAULT_CONSOLE_BE, DefaultConsoleRenderer::new);
+
+        TardisNetworking.registerClientReceivers();
 
 
 

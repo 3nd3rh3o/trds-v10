@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.primitives.UnsignedInteger;
-
 import ender.dwmod.DwMod;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
+import ender.dwmod.tardis.networking.TardisDataSyncS2C;
+import ender.dwmod.tardis.networking.TardisUpdateValueS2C;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
-public final class TardisRegisties {
+public final class TardisRegistries {
     
     private static final List<Tardis> tardis = new ArrayList<>();
     public static List<Tardis> get()
@@ -37,7 +43,15 @@ public final class TardisRegisties {
     {
         final Tardis t = Tardis.create(freeID(), entity.position(), entity.level().dimension());
         tardis.add(t);
-        DwMod.LOGGER.info("Triggered gen!");
+        
+        t.firstSpawn();
+        
+
+        
+        for (ServerPlayer player : PlayerLookup.all(entity.getServer()))
+        {
+            ServerPlayNetworking.send(player, TardisRegistries.createSyncPacket());
+        }
         return t;
     }
 
@@ -72,8 +86,26 @@ public final class TardisRegisties {
         return id;
     }
 
+    public static void tick(MinecraftServer server)
+    {
+        for (Tardis t : tardis)
+        {
+            t.tick(server);
+        }
+    }
+
+
     public static void deleteTardis(UnsignedInteger iD) { // Trigger cleanup of internal dimension etc....
         tardis.removeIf(t -> t.id().equals(iD));
         DwMod.LOGGER.info("Tardis with ID " + iD + " deleted from registries.");
+    }
+    // Create a sync packet containing all {@link Tardis}, to let the client use them for visual effects.
+    public static TardisDataSyncS2C createSyncPacket() {
+        CompoundTag tag = TardisPersistentState.toNBT(tardis);
+        return new TardisDataSyncS2C(tag);
+    }
+
+    public static CustomPacketPayload createValueNotifyPacket(UnsignedInteger id, String category, String name, String value) {
+        return new TardisUpdateValueS2C(id.intValue(), category, name, value);
     }
 }

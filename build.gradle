@@ -19,6 +19,8 @@ sourceSets {
     dwmod {
         java.srcDirs = [] // avoid duplicating compiled classes from main
         resources.srcDir 'src/dwmod/resources'
+        // datagen output (kept under version control if desired)
+        resources.srcDir 'src/dwmod/generated'
 
         // rely on main outputs for classes; keep them on the classpath
         compileClasspath += sourceSets.main.output + configurations.compileClasspath
@@ -104,8 +106,34 @@ loom {
     }
 
     runs.configureEach {
-        source sourceSets.dwmod
+        // The Fabric API helper creates the 'datagen' run config; configure it here without re-declaring it.
+        if (name == "datagen") {
+            source sourceSets.dwmod
+
+            // Fabric datagen is enabled via system properties (see FabricDataGenHelper).
+            // Using program args like '--all/--output/--mod' can crash because the vanilla server arg parser rejects them.
+            property "fabric-api.datagen", "true"
+            property "fabric-api.datagen.output-dir", file("src/dwmod/generated").absolutePath
+            property "fabric-api.datagen.modid", "dwmod"
+            property "fabric-api.datagen.strict-validation", "true"
+        }
     }
+
+    // Ensure the dev client run loads both mod ids (immersive_portals + dwmod).
+    // Without this, Gradle's `runClient` can end up using an unnamed/null run config and omit dwmod resources.
+    runs {
+        client {
+            client()
+            name = "client"
+            source sourceSets.main
+            source sourceSets.dwmod
+        }
+    }
+}
+
+// Make sure dwmod resources are processed before launching the dev client.
+tasks.named('runClient') {
+    dependsOn tasks.named('processDwmodResources')
 }
 
 // inclure les ressources dwmod (fabric.mod.json, assets, mixins) dans le jar dev/remappé
@@ -304,4 +332,20 @@ tasks.named('processDwmodResources') {
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+fabricApi {
+    configureDataGeneration()
+}
+
+// configureDataGeneration() may apply its own default datagen properties after our loom block;
+// re-apply our dwmod-specific settings last so datagen writes into src/dwmod/generated.
+afterEvaluate {
+    loom.runs.named("datagen") {
+        source sourceSets.dwmod
+        property "fabric-api.datagen", "true"
+        property "fabric-api.datagen.output-dir", file("src/dwmod/generated").absolutePath
+        property "fabric-api.datagen.modid", "dwmod"
+        property "fabric-api.datagen.strict-validation", "true"
+    }
 }

@@ -1,6 +1,7 @@
 package ender.dwmod.block;
 
 import ender.dwmod.DwMod;
+import ender.dwmod.block.tardis.EndoshellBlocks;
 import ender.dwmod.block.tardis.exoshell.DefaultConsole;
 import ender.dwmod.block.tardis.exoshell.DefaultConsoleInteract;
 import net.minecraft.core.Registry;
@@ -19,5 +20,7 @@ public abstract class BlockInit {
     {
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(DwMod.MOD_ID, "default_console_interact"), DEFAULT_CONSOLE_INTERACT);
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(DwMod.MOD_ID, "default_console"), DEFAULT_CONSOLE);
+        EndoshellBlocks.register();
+        
     }
 }

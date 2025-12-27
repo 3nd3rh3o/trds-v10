@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.common.primitives.UnsignedInteger;
 
 import ender.dwmod.entities.IMultiCollidable;
-import ender.dwmod.tardis.TardisRegisties;
+import ender.dwmod.tardis.TardisRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -97,18 +97,19 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     @Override
     public void tick() {
         super.tick();
-        if (onGround()) 
-            if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0) {
+        if (onGround()) // ensure block alignement and rotation modulo.
+            if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0 || this.yBodyRot != 0) {
                 this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
                 this.setYRot(0f);
                 this.setYHeadRot(0f);
+                this.yBodyRot = 0f;
                 if (!level().isClientSide())
-                    TardisRegisties.getTardis(ID).updatePosition(this);
+                    TardisRegistries.getTardis(ID).updatePosition(this);
                 this.hasImpulse = true; // inform MC that position changed to update clients
             }
         else
             if (!level().isClientSide() && !onGround())
-                TardisRegisties.getTardis(ID).updatePosition(this);
+                TardisRegistries.getTardis(ID).updatePosition(this);
     }
 
     // override damages, unless if done by command or in mod logic
@@ -150,8 +151,8 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         CompoundTag tardisData = compound.getCompound("TardisData");
-        if (!tardisData.contains("ID"))
-            ID = TardisRegisties.createTardis(this).id(); // create new Tardis on spawn
+        if (!tardisData.contains("ID") && !level().isClientSide())
+            ID = TardisRegistries.createTardis(this).id(); // create new Tardis on spawn
         else 
             ID = UnsignedInteger.fromIntBits(tardisData.getInt("ID")); // just regular loading, not a spawn
         super.readAdditionalSaveData(compound);
@@ -176,7 +177,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public void die(DamageSource cause) {
         super.die(cause);
         if (ID != null) // ensure server side
-            TardisRegisties.deleteTardis(ID);
+            TardisRegistries.deleteTardis(ID);
     }
 
     @Override // TODO - add actual colliders depending on state

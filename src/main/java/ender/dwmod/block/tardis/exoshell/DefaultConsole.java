@@ -2,6 +2,7 @@ package ender.dwmod.block.tardis.exoshell;
 
 import com.mojang.serialization.MapCodec;
 
+import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.block.BlockInit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -9,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -18,26 +21,31 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class DefaultConsole extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = makeShape();
-
-
+    
 
 
     public DefaultConsole(Properties properties) {
         super(properties);
     }
 
-
+    
 
     @Override
     public VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
         return Shapes.empty(); 
     }
 
-
+    
     
 
     
 
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            BlockEntityType<T> blockEntityType) {
+        return createTickerHelper(blockEntityType, BlockEntityInit.DEFAULT_CONSOLE_BE, DefaultConsoleBE::tick);
+    }
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
@@ -45,7 +53,7 @@ public class DefaultConsole extends BaseEntityBlock {
         for (int x = -1; x <= 1; x++) {
             for (int y = 0; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
-                    if (x == 0 && z == 0) continue;
+                    if (x == 0 && z == 0 && y == 0) continue;
                     level.setBlock(pos.offset(x, y, z), BlockInit.DEFAULT_CONSOLE_INTERACT.defaultBlockState(), UPDATE_ALL);
                 }
             }
@@ -60,7 +68,7 @@ public class DefaultConsole extends BaseEntityBlock {
         for (int x = -1; x <= 1; x++) {
             for (int y = 0; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
-                    if (x == 0 && z == 0) continue;
+                    if (x == 0 && z == 0 && y == 0) continue;
                     level.destroyBlock(pos.offset(x, y, z), false);
                 }
             }

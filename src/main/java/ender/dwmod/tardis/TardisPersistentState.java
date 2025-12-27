@@ -60,26 +60,38 @@ public class TardisPersistentState extends SavedData {
         return get(overworld);
     }
 
-    public void pushAllTardisData(List<Tardis> tardis) {
-        tardisData = new CompoundTag();
-        tardisData.putInt("tardis_count", tardis.size());
+    public static CompoundTag toNBT(List<Tardis> tardis)
+    {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putInt("tardis_count", tardis.size());
         for(int i = 0; i < tardis.size(); i++)
         {
             final Tardis t = tardis.get(i);
-            tardisData.put("tardis" + i, t.toNBT());
+            nbt.put("tardis" + i, t.toNBT());
         }
+        return nbt;
+    }
+
+    public static List<Tardis> fromNBT(CompoundTag nbt)
+    {
+        int count = nbt.getInt("tardis_count");
+        List<Tardis> tardisList = new ArrayList<>(count);
+        for (int i = 0; i < count; i++)
+        {
+            Tardis t = new Tardis(nbt.getCompound("tardis" + i));
+            tardisList.add(t);
+        }
+        return tardisList;
+    }
+
+    public void pushAllTardisData(List<Tardis> tardis) {
+        tardisData = toNBT(tardis);
         DwMod.LOGGER.info("Saved " + tardis.size() + " Tardis data entries.");
         setDirty();
     }
 
     public List<Tardis> getAllTardisData() {
-        int count = tardisData.getInt("tardis_count");
-        List<Tardis> tardisList = new ArrayList<>(count);
-        for (int i = 0; i < count; i++)
-        {
-            Tardis t = new Tardis(tardisData.getCompound("tardis" + i));
-            tardisList.add(t);
-        }
+        List<Tardis> tardisList = fromNBT(tardisData);
         DwMod.LOGGER.info("Loaded " + tardisList.size() + " Tardis data entries.");
         return tardisList;
     }

@@ -21,7 +21,7 @@ import net.minecraft.util.StringRepresentable;
 
 public class DefaultConsoleInteract extends Block {
     private enum Pos implements StringRepresentable {
-        N("n"), NE("ne"), NW("nw"), S("s"), SE("se"), SW("sw"), E("e"), W("w"), NONE("none");
+        N("n"), NE("ne"), NW("nw"), S("s"), SE("se"), SW("sw"), E("e"), W("w"), NONE("none"), C("c");
         // TODO - add up_center ! to have a nice hitbox on the rotor
         private final String name;
 
@@ -144,6 +144,11 @@ public class DefaultConsoleInteract extends Block {
             p = Pos.SW;
             u = true;
         }
+        else if (level.getBlockState(pos.below()).getBlock().equals(BlockInit.DEFAULT_CONSOLE))
+        {
+            p = Pos.C;
+            u = true;
+        }
         else
         {
             p = Pos.NONE;
@@ -158,7 +163,7 @@ public class DefaultConsoleInteract extends Block {
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
             CollisionContext context) {
-        if (state.getValue(UP))
+        if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
             return SHAPE_UP;
         else
             return SHAPE;
@@ -166,7 +171,7 @@ public class DefaultConsoleInteract extends Block {
 
     @Override
     protected VoxelShape getInteractionShape(BlockState state, BlockGetter level, BlockPos pos) {
-        if (state.getValue(UP))
+        if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
             return SHAPE_UP;
         else
             return SHAPE;
@@ -179,7 +184,7 @@ public class DefaultConsoleInteract extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (state.getValue(UP))
+        if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
             return SHAPE_UP;
         else
             return SHAPE;
@@ -189,7 +194,7 @@ public class DefaultConsoleInteract extends Block {
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -206,6 +211,7 @@ public class DefaultConsoleInteract extends Block {
             case NW -> state.getValue(UP) ? ((DefaultConsoleBE)level.getBlockEntity(pos.below().north().west())).interact(player, hitResult) : ((DefaultConsoleBE)level.getBlockEntity(pos.north().west())).interact(player, hitResult);
             case SE -> state.getValue(UP) ? ((DefaultConsoleBE)level.getBlockEntity(pos.below().south().east())).interact(player, hitResult) : ((DefaultConsoleBE)level.getBlockEntity(pos.south().east())).interact(player, hitResult);
             case SW -> state.getValue(UP) ? ((DefaultConsoleBE)level.getBlockEntity(pos.below().south().west())).interact(player, hitResult) : ((DefaultConsoleBE)level.getBlockEntity(pos.south().west())).interact(player, hitResult);
+            case C -> ((DefaultConsoleBE)level.getBlockEntity(pos.below())).interact(player, hitResult);
             default -> InteractionResult.FAIL;
         };
     }
@@ -227,6 +233,7 @@ public class DefaultConsoleInteract extends Block {
             case NW -> state.getValue(UP) ? pos.below().north().west() : pos.north().west();
             case SE -> state.getValue(UP) ? pos.below().south().east() : pos.south().east();
             case SW -> state.getValue(UP) ? pos.below().south().west() : pos.south().west();
+            case C -> pos.below();
             default -> pos;
         };
 
@@ -237,7 +244,7 @@ public class DefaultConsoleInteract extends Block {
                 for (int z = -1; z <= 1; z++)
                 {
                     BlockPos checkPos = offset.offset(x, y, z);
-                    if (level.getBlockState(checkPos).getBlock().equals(BlockInit.DEFAULT_CONSOLE)|| level.getBlockState(checkPos).getBlock().equals(BlockInit.DEFAULT_CONSOLE_INTERACT))
+                    if (level.getBlockState(checkPos).getBlock().equals(BlockInit.DEFAULT_CONSOLE) || level.getBlockState(checkPos).getBlock().equals(BlockInit.DEFAULT_CONSOLE_INTERACT))
                     {
                         level.destroyBlock(checkPos, false);
                     }

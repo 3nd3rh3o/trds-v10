@@ -1,7 +1,6 @@
 package ender.dwmod.mixin;
 
 import com.google.common.collect.ImmutableList;
-import ender.dwmod.DwMod;
 import ender.dwmod.entities.IMultiCollidable;
 
 import java.util.Iterator;

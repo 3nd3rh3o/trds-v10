@@ -7,6 +7,9 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
+    "fabric-datagen": [
+      "ender.dwmod.DwModDataGenerator"
+    ],
     "main": ["ender.dwmod.DwMod"],
     "client" : ["client.ender.dwmod.DwModClient"]
   },
@@ -16,6 +19,7 @@
   "depends": {
     "fabricloader": ">=0.14.0",
     "minecraft": ["1.21", "1.21.1"],
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "geckolib": ">=4.8.2"
   }
 }

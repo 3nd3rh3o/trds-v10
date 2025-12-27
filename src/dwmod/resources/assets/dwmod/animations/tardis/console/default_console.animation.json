@@ -8,6 +8,58 @@
 		"rotor.flight_loop.spin": {
 			"loop": true,
 			"animation_length": 8
+		},
+		"animation.door_switch.set_on": {
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"mobile": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, -1]
+						}
+					}
+				}
+			}
+		},
+		"animation.door_switch.idle_on": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"mobile": {
+					"position": {
+						"vector": [0, 0, -1]
+					}
+				}
+			}
+		},
+		"animation.door_switch.set_off": {
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"mobile": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, -1]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.door_switch.idle_off": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"mobile": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				}
+			}
 		}
 	},
 	"geckolib_format_version": 2

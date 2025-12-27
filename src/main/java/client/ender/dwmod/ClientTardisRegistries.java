@@ -1,0 +1,47 @@
+package client.ender.dwmod;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import ender.dwmod.tardis.Tardis;
+import ender.dwmod.tardis.TardisPersistentState;
+import ender.dwmod.tardis.networking.EncodingHelpers;
+import ender.dwmod.tardis.networking.TardisDataSyncS2C;
+import ender.dwmod.tardis.networking.TardisUpdateValueS2C;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+
+public final class ClientTardisRegistries {
+    private static final List<Tardis> tardis = new ArrayList<>();
+    public static List<Tardis> get()
+    {
+        return tardis;
+    }
+
+    public static void handleSyncPacket(TardisDataSyncS2C packet, ClientPlayNetworking.Context context)
+    {
+        tardis.clear();
+        tardis.addAll(TardisPersistentState.fromNBT(packet.tag()));
+        DwModClient.LOGGER.info("Synchronized " + tardis.size() + " Tardis data entries from server.");
+    }
+
+    public static void handleUpdateValuePacket(TardisUpdateValueS2C packet, ClientPlayNetworking.Context context)
+    {
+        for (Tardis t : tardis)
+        {
+            if (t.id().intValue() == packet.tardisID())
+            {
+                switch (packet.category())
+                {
+                    case "exoshell" -> {
+                        switch (packet.key())
+                        {
+                            case "position" -> {
+                                t.clientSyncPosition(EncodingHelpers.toVec3(packet.value()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }    
+}
