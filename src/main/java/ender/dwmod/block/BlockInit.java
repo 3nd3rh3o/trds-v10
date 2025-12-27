@@ -4,6 +4,7 @@ import ender.dwmod.DwMod;
 import ender.dwmod.block.tardis.EndoshellBlocks;
 import ender.dwmod.block.tardis.exoshell.DefaultConsole;
 import ender.dwmod.block.tardis.exoshell.DefaultConsoleInteract;
+import ender.dwmod.block.tardis.lamps.TardisLampsRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -21,6 +22,7 @@ public abstract class BlockInit {
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(DwMod.MOD_ID, "default_console_interact"), DEFAULT_CONSOLE_INTERACT);
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(DwMod.MOD_ID, "default_console"), DEFAULT_CONSOLE);
         EndoshellBlocks.register();
+        TardisLampsRegistry.register();
         
     }
 }

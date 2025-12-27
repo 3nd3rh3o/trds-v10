@@ -13,9 +13,13 @@ public class EndoshellBlocks {
 
     public static final Block TARDIS_DEFAULT_FLOOR = new Block(Properties.ofFullCopy(Blocks.BEDROCK));
     public static final BlockItem TARDIS_DEFAULT_FLOOR_ITEM = new BlockItem(TARDIS_DEFAULT_FLOOR, new BlockItem.Properties());
+    public static final Block TARDIS_DEFAULT_WALL = new Block(Properties.ofFullCopy(Blocks.BEDROCK));
+    public static final BlockItem TARDIS_DEFAULT_WALL_ITEM = new BlockItem(TARDIS_DEFAULT_WALL, new BlockItem.Properties());
+
 
     public static void register() {
         registerBuildBlock("tardis_default_floor", TARDIS_DEFAULT_FLOOR, TARDIS_DEFAULT_FLOOR_ITEM);
+        registerBuildBlock("tardis_default_wall", TARDIS_DEFAULT_WALL, TARDIS_DEFAULT_WALL_ITEM);
     }
 
 

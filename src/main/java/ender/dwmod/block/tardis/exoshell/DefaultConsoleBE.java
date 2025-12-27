@@ -6,9 +6,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import client.ender.dwmod.ClientTardisRegistries;
 import ender.dwmod.DwMod;
 import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.tardis.Interactible;
+import ender.dwmod.tardis.TardisRegistries;
 import ender.dwmod.utils.RayCastShape.Sphere;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.core.BlockPos;
@@ -34,18 +36,20 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
     private static final boolean debugRayCast = true; // log in chat !
 
-    // animations
+    // door switch
     private static final RawAnimation DOOR_SWITCH_SET_ON = RawAnimation.begin().thenPlay("animation.door_switch.set_on");
     private static final RawAnimation DOOR_SWITCH_SET_OFF = RawAnimation.begin().thenPlay("animation.door_switch.set_off");
     private static final RawAnimation DOOR_SWITCH_IDLE_OFF = RawAnimation.begin().thenPlayAndHold("animation.door_switch.idle_off");
     private static final RawAnimation DOOR_SWITCH_IDLE_ON = RawAnimation.begin().thenPlayAndHold("animation.door_switch.idle_on");
+    // light switch
+    private static final RawAnimation LIGHT_SWITCH_SET_ON = RawAnimation.begin().thenPlay("animation.light_switch.set_on");
+    private static final RawAnimation LIGHT_SWITCH_SET_OFF = RawAnimation.begin().thenPlay("animation.light_switch.set_off");
+    private static final RawAnimation LIGHT_SWITCH_IDLE_OFF = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_off");
+    private static final RawAnimation LIGHT_SWITCH_IDLE_ON = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_on");
 
-
-    @Deprecated //"will be replaced by read/write of a tardis object"
-    private boolean door_switch = true; // TODO - Should be synced with client and only defined on server!
-
-    private final List<Interactible> INTERACTIBLES = List.of(
-        new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20) // door switch
+    private final List<Interactible> INTERACTIBLES = List.of( // use blockbench coords / 16 - (0, 0.5, 0)
+        new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20), // door switch
+        new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 20) // light switch
     );
 
 
@@ -60,11 +64,18 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
     public void registerControllers(ControllerRegistrar controllers) {
         controllers.add(
             new AnimationController<>(this, "door_switch", 0, state -> {
-                return door_switch ? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
+                return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getDoorState()) || TardisRegistries.get(worldPosition).getDoorState()? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", DOOR_SWITCH_SET_ON)
             .triggerableAnim("set_off", DOOR_SWITCH_SET_OFF)
-    );
+        );
+        controllers.add(
+            new AnimationController<>(this, "light_switch", 0, state -> {
+                return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getInternalLight()) || TardisRegistries.get(worldPosition).getInternalLight() ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
+            })
+            .triggerableAnim("set_on", LIGHT_SWITCH_SET_ON)
+            .triggerableAnim("set_off", LIGHT_SWITCH_SET_OFF)
+        );
     }
 
     @Override
@@ -96,9 +107,20 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
                     DwMod.LOGGER.info("DefaultConsoleBE interacted : door switch");
                 
                 if (!level.isClientSide)
-                    triggerAnimBroad("door_switch", this.door_switch ? "set_off" : "set_on");
-                this.door_switch = !this.door_switch; // will change the var on both sides
-                // TODO - set data on Tardis, it will send a packet to all clients, and they will update their values. {@link DefaultConsoleBE.door_switch} will be removed, the tardis object will be read instead.
+                {
+                    TardisRegistries.get(worldPosition).toggleDoorState();
+                    triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getDoorState() ? "set_on" : "set_off");
+                }
+            }
+            case 1 -> {
+                if (!level.isClientSide && debugRayCast)
+                    DwMod.LOGGER.info("DefaultConsoleBE interacted : light switch");
+                
+                if (!level.isClientSide)
+                {
+                    TardisRegistries.get(worldPosition).toggleInternalLight();
+                    triggerAnimBroad("light_switch", TardisRegistries.get(worldPosition).getInternalLight() ? "set_on" : "set_off");
+                }
             }
             default -> {
                 // no interaction

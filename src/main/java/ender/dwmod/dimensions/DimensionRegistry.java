@@ -36,7 +36,7 @@ public class DimensionRegistry {
             256, // logical height
             BlockTags.INFINIBURN_OVERWORLD, // infiniburn
             BuiltinDimensionTypes.OVERWORLD_EFFECTS, // effects
-            1.0f, // ambient light
+            0.0f, // ambient light
             new DimensionType.MonsterSettings(
                 false, // piglins safe
                 false, // has raid

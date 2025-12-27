@@ -24,6 +24,8 @@ public class Tardis {
     private Vec3 position;
     private ResourceKey<Level> dimension;
     private ArchitecturalReconfiguration ars;
+    private boolean internalLight = false;
+    private boolean doorState = false;
 
     private Tardis() {
 
@@ -47,6 +49,8 @@ public class Tardis {
         );
         this.ars = new ArchitecturalReconfiguration(id.intValue());
         this.ars.readNBT(compound.getCompound("ars"));
+        this.doorState = compound.getBoolean("door_state");
+        this.internalLight = compound.getBoolean("internal_light");
     }
 
     // Used for NBT saving -> No events triggered.
@@ -59,6 +63,8 @@ public class Tardis {
         compound.putString("dimNamespace", dimension.location().getNamespace());
         compound.putString("dimPath", dimension.location().getPath());
         compound.put("ars", ars.toNBT());
+        compound.putBoolean("door_state", doorState);
+        compound.putBoolean("internal_light", internalLight);
         return compound;
     }
 
@@ -86,15 +92,6 @@ public class Tardis {
         }
     }
 
-
-
-    // ONLY ON CLIENT SIDE
-
-    public void clientSyncPosition(Vec3 vec3) {
-        this.position = vec3;
-    }
-
-
     public void firstSpawn() {
         // generate the default console room
 
@@ -118,4 +115,41 @@ public class Tardis {
         ars.tick(server);
     }
 
+
+    public boolean getInternalLight() {
+        return internalLight;
+    }
+
+
+    public boolean getDoorState() {
+        return doorState;
+    }
+
+    
+
+    public void toggleDoorState() {
+        doorState = !doorState;
+        TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState));
+    }
+
+
+
+    // ONLY ON CLIENT SIDE
+
+    public void clientSyncPosition(Vec3 vec3) {
+        this.position = vec3;
+    }
+
+
+
+
+    public void clientSyncDoorState(boolean boolean1) {
+        doorState = boolean1;
+    }
+
+
+    public void toggleInternalLight() {
+        internalLight = !internalLight;
+        TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight));
+    }
 }

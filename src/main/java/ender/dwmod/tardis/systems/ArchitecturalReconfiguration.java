@@ -51,6 +51,11 @@ public class ArchitecturalReconfiguration {
             Room room = Room.fromNBT(roomTag);
             rooms.add(room);
         }
+        if (consoleRoomIndex >= 0 && consoleRoomIndex < rooms.size())
+        {
+            rooms.get(consoleRoomIndex).setAsConsoleRoom();
+            standByRooms.add(rooms.get(consoleRoomIndex));
+        }
     }
 
     public Tag toNBT() {
@@ -191,25 +196,32 @@ public class ArchitecturalReconfiguration {
 
 
     public void tick(MinecraftServer server) {
-        for (Room room : activeRooms)
+        for (int i = 0; i < activeRooms.size(); i++)
         {
+            Room room = activeRooms.get(i);
             room.tick(server);
             if (room.shouldDeactivate(server, rooms))
             {
+                DwMod.LOGGER.info("Deactivating room " + room.getStructureName() + " at virtual position " + room.getVirtualPosition());
                 standByRooms.removeAll(room.roomsToSleep());
                 standByRooms.add(room);
+                activeRooms.remove(i);
             }
         }
 
-        for (Room room : standByRooms)
+        for (int i = 0; i < standByRooms.size(); i++)
         {
+            Room room = standByRooms.get(i);
             if (room.shouldActivate(server, rooms)) {
+                DwMod.LOGGER.info("Activating room " + room.getStructureName() + " at virtual position " + room.getVirtualPosition());
                 activeRooms.add(room);
+                standByRooms.remove(i);
             }
         }
 
-        for (Room room : roomPostGen)
+        for (int i = 0; i < roomPostGen.size(); i++)
         {
+            Room room = roomPostGen.get(i);
             room.postGeneration(server, rooms);
             if (room.isConsoleRoom())
             {

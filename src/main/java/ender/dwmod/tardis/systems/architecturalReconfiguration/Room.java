@@ -2,6 +2,8 @@ package ender.dwmod.tardis.systems.architecturalReconfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ender.dwmod.DwMod;
 import ender.dwmod.dimensions.DimensionRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -118,7 +120,6 @@ public class Room {
         );
         List<ServerPlayer> players = server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getPlayers(p -> roomAABB.contains(p.position()));
         if (players.size() == 0) {
-            // run deactivation here!
             return true;
         }
         return false;
@@ -133,6 +134,7 @@ public class Room {
         List<ServerPlayer> players = server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getPlayers(p -> roomAABB.contains(p.position()));
         if (players.size() > 0) {
             // run activation here!
+            DwMod.LOGGER.info("Activating room " + structureName + " at virtual position " + virtualPosition);
             return true;
         }
         return false;
@@ -159,5 +161,9 @@ public class Room {
 
     public void setAsConsoleRoom() {
         this.consoleRoom = true;
+    }
+
+    public String getStructureName() {
+        return structureName;
     }
 }

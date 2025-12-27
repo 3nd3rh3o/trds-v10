@@ -106,6 +106,11 @@ loom {
     }
 
     runs.configureEach {
+        // Datagen strict validation (vanilla ModelProvider) requires every registered block to have
+        // a generated blockstate definition, even if you already provide JSON in resources.
+        // Keep it opt-in to avoid crashing datagen for manually-authored blockstates.
+        def datagenStrictValidation = project.findProperty('datagenStrictValidation')?.toString() ?: 'false'
+
         // The Fabric API helper creates the 'datagen' run config; configure it here without re-declaring it.
         if (name == "datagen") {
             source sourceSets.dwmod
@@ -115,7 +120,7 @@ loom {
             property "fabric-api.datagen", "true"
             property "fabric-api.datagen.output-dir", file("src/dwmod/generated").absolutePath
             property "fabric-api.datagen.modid", "dwmod"
-            property "fabric-api.datagen.strict-validation", "true"
+            property "fabric-api.datagen.strict-validation", datagenStrictValidation
         }
     }
 
@@ -346,6 +351,7 @@ afterEvaluate {
         property "fabric-api.datagen", "true"
         property "fabric-api.datagen.output-dir", file("src/dwmod/generated").absolutePath
         property "fabric-api.datagen.modid", "dwmod"
-        property "fabric-api.datagen.strict-validation", "true"
+        def datagenStrictValidation = project.findProperty('datagenStrictValidation')?.toString() ?: 'false'
+        property "fabric-api.datagen.strict-validation", datagenStrictValidation
     }
 }
