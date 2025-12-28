@@ -1,8 +1,14 @@
 package ender.dwmod.tardis;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.primitives.UnsignedInteger;
 
+import ender.dwmod.DwMod;
+import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
+import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
 import ender.dwmod.tardis.networking.EncodingHelpers;
 import ender.dwmod.tardis.systems.ArchitecturalReconfiguration;
@@ -16,9 +22,13 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.q_misc_util.my_util.DQuaternion;
 
 public class Tardis {
     private UnsignedInteger id;
@@ -26,7 +36,18 @@ public class Tardis {
     private ResourceKey<Level> dimension;
     private ArchitecturalReconfiguration ars;
     private boolean internalLight = false;
+    public List<TardisAnimatable> internal_light_dependants = new ArrayList<>();
     private boolean doorState = false;
+    public List<TardisAnimatable> door_state_dependants = new ArrayList<>();
+    private Portal exoshellPortal = null;
+
+
+    
+
+
+    private static final Vec3 TEMP_VEC3 = new Vec3(0, 1.5, 0.5);
+    private static final double TEMP_W = 1.75;
+    private static final double TEMP_H = 3;
 
     private Tardis() {
 
@@ -114,6 +135,21 @@ public class Tardis {
     public void tick(MinecraftServer server)
     {
         ars.tick(server);
+        if (exoshellPortal == null)
+        {
+            List<Portal> p = server.getLevel(dimension).getEntitiesOfClass(Portal.class, AABB.ofSize(position, 2, 2, 2), e->true);
+            if (p.size() > 0)
+            {
+                exoshellPortal = p.getFirst();
+            }
+        }
+        if (exoshellPortal != null && (position.add(TEMP_VEC3).subtract(exoshellPortal.getOriginPos())).lengthSqr() > 1e-6)
+        {
+            exoshellPortal.setOriginPos(position.add(TEMP_VEC3));
+            exoshellPortal.reloadAndSyncToClientNextTick();
+            ars.updateConsoleRoomExit(position);
+        }
+        
     }
 
 
@@ -131,12 +167,18 @@ public class Tardis {
     public void toggleDoorState(MinecraftServer server) {
         doorState = !doorState;
         broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState)), server);
+        for (int i = 0; i < door_state_dependants.size(); i++)
+            door_state_dependants.get(i).
+                triggerAnimBroad("door_state", doorState ? "set_on" : "set_off");
     }
 
 
     public void toggleInternalLight(MinecraftServer server) {
         internalLight = !internalLight;
         broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight)), server);
+        for (int i = 0; i < internal_light_dependants.size(); i++)
+            internal_light_dependants.get(i).
+                        triggerAnimBroad("light_switch", internalLight ? "set_on" : "set_off");
     }
 
     private static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
@@ -168,5 +210,54 @@ public class Tardis {
 
     public void delete(MinecraftServer server) {
         ars.deleteAllRooms(server);
+        if (exoshellPortal != null)
+        {
+            exoshellPortal.kill();
+            exoshellPortal.reloadAndSyncToClient();
+            exoshellPortal = null;
+        }
     }
+
+
+    public void spawnExoshellPortal() {
+        if (exoshellPortal != null)
+            exoshellPortal.kill();
+        ServerLevel originLevel = TardisRegistries.server.getLevel(dimension);
+        if (originLevel == null) {
+            DwMod.LOGGER.error("Cannot spawn exoshell portal: origin dimension {} is not loaded", dimension.location());
+            exoshellPortal = null;
+            return;
+        }
+
+        Portal portal = Portal.ENTITY_TYPE.create(originLevel);
+        if (portal == null) {
+            DwMod.LOGGER.error("Cannot spawn exoshell portal: Portal entity type returned null");
+            exoshellPortal = null;
+            return;
+        }
+
+        // IMPORTANT: Portal orientation (axisW/axisH) must be initialized.
+        // setRotation() is the transformation, not the portal plane orientation.
+        portal.setOrientationRotation(DQuaternion.fromEulerAngle(Vec3.ZERO));
+        portal.setWidth(TEMP_W);
+        portal.setHeight(TEMP_H);
+
+        portal.setOriginPos(position.add(TEMP_VEC3));
+        portal.setDestinationDimension(DimensionRegistry.VORTEX_DIMENSION_KEY);
+        portal.setDestination(ars.getConsoleRoomEntrance());
+        portal.setRotation(DQuaternion.fromEulerAngle(new Vec3(0, 180, 0)));
+
+        originLevel.addFreshEntity(portal);
+        exoshellPortal = portal;
+    }
+
+
+	public Vec3 getPosition() {
+        return position;
+	}
+
+
+	public ResourceKey<Level> getDimension() {
+		return dimension;
+	}
 }

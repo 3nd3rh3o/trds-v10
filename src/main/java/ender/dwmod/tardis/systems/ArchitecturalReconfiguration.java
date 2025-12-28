@@ -2,8 +2,12 @@ package ender.dwmod.tardis.systems;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.primitives.UnsignedInteger;
+
 import ender.dwmod.DwMod;
 import ender.dwmod.dimensions.DimensionRegistry;
+import ender.dwmod.tardis.TardisRegistries;
 import ender.dwmod.tardis.systems.architecturalReconfiguration.Room;
 import ender.dwmod.utils.StructurePlacer;
 import ender.dwmod.utils.StructureTask;
@@ -13,6 +17,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.phys.Vec3;
 
 public class ArchitecturalReconfiguration {
     public static final String CATEGORY = "architectural_reconfiguration";
@@ -130,6 +135,8 @@ public class ArchitecturalReconfiguration {
                             }
                             roomPostGen.add(r);
                             rooms.add(r);
+                            if (isFirstRoom)
+                                TardisRegistries.getTardis(UnsignedInteger.valueOf(id)).spawnExoshellPortal();
                             DwMod.LOGGER.info("Room " + name + " placed at world position " + worldPosition + " in Tardis ID " + id);
                         };
                         for (int xP = 0; xP < size.getX(); xP++)
@@ -238,5 +245,14 @@ public class ArchitecturalReconfiguration {
         {
             r.setInactive(server);
         }
+    }
+
+    public Vec3 getConsoleRoomEntrance() {
+        
+        return rooms.get(consoleRoomIndex).getFeaturePos("console_room_entrance");
+    }
+
+    public void updateConsoleRoomExit(Vec3 pos) {
+        rooms.get(consoleRoomIndex).updateConsoleRoomExit(pos);
     }
 }

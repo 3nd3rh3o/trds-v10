@@ -18,7 +18,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class TardisRegistries {
-    
+    public static MinecraftServer server;
     private static final List<Tardis> tardis = new ArrayList<>();
     public static List<Tardis> get()
     {
@@ -28,6 +28,7 @@ public final class TardisRegistries {
     public static void onWorldJoin(MinecraftServer server)
     {
         tardis.clear();
+        TardisRegistries.server = server;
         TardisPersistentState state = TardisPersistentState.get(server);
         List<Tardis> trdss = state.getAllTardisData();
         tardis.addAll(trdss);
@@ -66,7 +67,7 @@ public final class TardisRegistries {
                 return t;
             }
         }
-        throw new NullPointerException();
+        return null;
     }
 
     private static UnsignedInteger freeID()

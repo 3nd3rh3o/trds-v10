@@ -29,14 +29,14 @@ import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.network.packet.BlockEntityAnimTriggerPacket;
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
+public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, TardisAnimatable {
     private static final boolean debugRayCast = true; // log in chat !
-
     // door switch
     private static final RawAnimation DOOR_SWITCH_SET_ON = RawAnimation.begin().thenPlay("animation.door_switch.set_on");
     private static final RawAnimation DOOR_SWITCH_SET_OFF = RawAnimation.begin().thenPlay("animation.door_switch.set_off");
@@ -47,6 +47,9 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
     private static final RawAnimation LIGHT_SWITCH_SET_OFF = RawAnimation.begin().thenPlay("animation.light_switch.set_off");
     private static final RawAnimation LIGHT_SWITCH_IDLE_OFF = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_off");
     private static final RawAnimation LIGHT_SWITCH_IDLE_ON = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_on");
+
+    public boolean isFirstTick = true;
+
 
     private final List<Interactible> INTERACTIBLES = List.of( // use blockbench coords / 16 - (0, 0.5, 0)
         new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20), // door switch
@@ -61,24 +64,33 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
         SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
+
+
     @Override
     public void registerControllers(ControllerRegistrar controllers) {
         if (!level.dimension().equals(DimensionRegistry.VORTEX_DIMENSION_KEY))
             return; // only animate in Tardis dimension
-        controllers.add(
-            new AnimationController<>(this, "door_switch", 1, state -> {
-                return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getDoorState()) || TardisRegistries.get(worldPosition).getDoorState()? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
+        controllers.add( // door switch
+            new AnimationController<>(this, "door_state", 1, state -> {
+                if (ClientTardisRegistries.get(worldPosition) == null)
+                    return PlayState.STOP;
+                else
+                    return ClientTardisRegistries.get(worldPosition).getDoorState() ? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", DOOR_SWITCH_SET_ON)
             .triggerableAnim("set_off", DOOR_SWITCH_SET_OFF)
         );
         controllers.add(
             new AnimationController<>(this, "light_switch", 1, state -> {
-                return (level.isClientSide && ClientTardisRegistries.get(worldPosition).getInternalLight()) || TardisRegistries.get(worldPosition).getInternalLight() ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
+                
+                    if (ClientTardisRegistries.get(worldPosition) == null)
+                        return PlayState.STOP;
+                    else
+                        return ClientTardisRegistries.get(worldPosition).getInternalLight() ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", LIGHT_SWITCH_SET_ON)
             .triggerableAnim("set_off", LIGHT_SWITCH_SET_OFF)
-        );
+        );        
     }
 
     @Override
@@ -114,7 +126,6 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
                     if (!level.isClientSide)
                     {
                         TardisRegistries.get(worldPosition).toggleDoorState(level.getServer());
-                        triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getDoorState() ? "set_on" : "set_off");
                     }
                 }
                 case 1 -> {
@@ -124,7 +135,6 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
                     if (!level.isClientSide)
                     {
                         TardisRegistries.get(worldPosition).toggleInternalLight(level.getServer());
-                        triggerAnimBroad("light_switch", TardisRegistries.get(worldPosition).getInternalLight() ? "set_on" : "set_off");
                     }
                 }
                 default -> {
@@ -149,9 +159,21 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
         for (Interactible interactible : entity.INTERACTIBLES) {
             interactible.tick();
         }
+        if (!world.isClientSide() && entity.isFirstTick)
+        {
+            if (TardisRegistries.get(entity.worldPosition) == null)
+            {
+                entity.isFirstTick = false; // ignore when not inside a Tardis
+                return;
+            }
+            TardisRegistries.get(entity.worldPosition).internal_light_dependants.add(entity);
+            TardisRegistries.get(entity.worldPosition).door_state_dependants.add(entity);
+            entity.isFirstTick = false;
+        }
+        
     }
 
-
+    @Override
     public void triggerAnimBroad(@Nullable String controllerName, String animName) {
         if (!(this.level instanceof ServerLevel sl))
             return;
@@ -181,4 +203,16 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity {
         }
     }
 
+    @Override
+    public void setRemoved() {
+        if (!level.isClientSide)
+        {
+            if (TardisRegistries.get(worldPosition) != null)
+            {
+                TardisRegistries.get(worldPosition).internal_light_dependants.remove(this);
+                TardisRegistries.get(worldPosition).door_state_dependants.remove(this);
+            }
+        }
+        super.setRemoved();
+    }   
 }

@@ -19,6 +19,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.q_misc_util.my_util.DQuaternion;
 
 public class Room {
     private final BlockPos virtualPosition;
@@ -34,6 +37,10 @@ public class Room {
     private final boolean downConnected;
 
     private boolean consoleRoom = false;
+    private List<Portal> activePortals = new ArrayList<>();
+
+    // only used by console room
+    private Portal portalToExt = null;
 
     private Room(BlockPos virtualPosition, BlockPos worldPosition, Vec3i size, String structureName,
             boolean northConnected, boolean southConnected, boolean eastConnected,
@@ -130,7 +137,7 @@ public class Room {
         if (players.size() == 0) {
             return true;
         }
-        return false;
+        return false; 
     }
 
     public boolean shouldActivate(MinecraftServer server, List<Room> rooms) {
@@ -153,6 +160,17 @@ public class Room {
         // if console room, obligatory forceload
         if (isConsoleRoom()) {
             setForceLoad(server, worldPosition, size, true);
+            Vec3 o = getFeaturePos("console_room_entrance");
+            Portal consoleExtPortal = Portal.ENTITY_TYPE.create(server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY));
+            consoleExtPortal.setOrientationRotation(DQuaternion.fromEulerAngle(new Vec3(0, 0, 0)));
+            consoleExtPortal.setWidth(1.75);
+            consoleExtPortal.setHeight(3);
+            consoleExtPortal.setOriginPos(o);
+            consoleExtPortal.setDestinationDimension(TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getDimension());
+            consoleExtPortal.setDestination(TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getPosition().add(0, 1.5, 0.5));
+            consoleExtPortal.setRotation(DQuaternion.fromEulerAngle(new Vec3(0, 180, 0)));
+            portalToExt = consoleExtPortal;
+            server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).addFreshEntity(consoleExtPortal);
         }
         // else, if adjacent is active, forceload too
         //TODO
@@ -186,6 +204,27 @@ public class Room {
 
     public void setInactive(MinecraftServer server) {
         setForceLoad(server, worldPosition, size, false);
+        for (int i = 0; i < activePortals.size(); i++) {
+            Portal p = activePortals.get(i);
+            p.kill();
+        }
+        activePortals.clear();
+        if (isConsoleRoom())
+        {
+            if (portalToExt == null) // while debugging, may be null
+            {
+                List<Portal> portals = TardisRegistries.server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getEntitiesOfClass(Portal.class, AABB.ofSize(getFeaturePos("console_room_entrance"), 2, 2, 2), e->true);
+                if (!portals.isEmpty()) {
+                    portalToExt = portals.get(0);
+                }
+            }
+            if (portalToExt != null) // while debugging, may be null cause already killed
+            {
+                portalToExt.kill();
+                portalToExt.reloadAndSyncToClient();
+                portalToExt = null;
+            }
+        }
     }
 
 
@@ -212,6 +251,10 @@ public class Room {
         
     }
 
+    public Vec3 getFeaturePos(String featureName) {
+        return Rooms.getFeaturePos(structureName, featureName, worldPosition);
+    }
+
     private static void setForceLoad(MinecraftServer server, BlockPos worldPosition, Vec3i size, boolean forceload)
     {
         // Compute range of chunks to forceload from dimX and dimZ
@@ -227,5 +270,12 @@ public class Room {
                 server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).setChunkForced(cx, cz, forceload);
             }
         }
+    }
+
+    public void updateConsoleRoomExit(Vec3 pos) {
+        if (portalToExt == null)
+            portalToExt = TardisRegistries.server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getEntitiesOfClass(Portal.class, AABB.ofSize(getFeaturePos("console_room_entrance"), 2, 2, 2), e->true).getFirst();
+        portalToExt.setDestination(pos.add(new Vec3(0, 1.5, 0.5)));
+        portalToExt.reloadAndSyncToClientNextTick();
     }
 }

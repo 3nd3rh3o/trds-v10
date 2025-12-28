@@ -118,6 +118,9 @@ public class StructureTask {
                             if (onFinish != null)
                                 onFinish.run();
                         }
+                        catch (Exception e) {
+                            DwMod.LOGGER.error("Error placing structure {}:{}", structureNameSpace, structurePath, e);
+                        }
                         finally 
                         {
                             // remove forceload if specified

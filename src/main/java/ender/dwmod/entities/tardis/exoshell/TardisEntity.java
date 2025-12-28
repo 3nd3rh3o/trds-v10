@@ -1,13 +1,22 @@
 package ender.dwmod.entities.tardis.exoshell;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import com.google.common.primitives.UnsignedInteger;
 
+import client.ender.dwmod.ClientTardisRegistries;
+import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.tardis.TardisRegistries;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -18,9 +27,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import software.bernie.geckolib.GeckoLibServices;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.network.packet.EntityAnimTriggerPacket;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 
@@ -34,8 +49,16 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 // Set entity from entity event => NOT OK
 // Set TardisData from entity event => ok but is done via a trigger on the Tardis Instance and is server side only.
 //  if in client => use a packet ! (player click ? but should be handled by minecraft so a bit pointless)
-public class TardisEntity extends LivingEntity implements GeoEntity, IMultiCollidable {
+public class TardisEntity extends LivingEntity implements GeoEntity, IMultiCollidable, TardisAnimatable {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    private static final RawAnimation IDLE_OPEN = RawAnimation.begin().thenPlayAndHold("animation.exoshell_default.door.idle_open");
+    private static final RawAnimation IDLE_CLOSED = RawAnimation.begin().thenPlayAndHold("animation.exoshell_default.door.idle_closed");
+    private static final RawAnimation OPEN = RawAnimation.begin().thenPlay("animation.exoshell_default.door.open");
+    private static final RawAnimation CLOSE = RawAnimation.begin().thenPlay("animation.exoshell_default.door.close");
+
+
+
 
     private UnsignedInteger ID;
 
@@ -65,7 +88,19 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
 
     @Override
     public void registerControllers(ControllerRegistrar controllers) {
-        return;
+        controllers.add(new AnimationController<>(this, "door_state", 1, state -> {
+            if (ID == null)
+                ID = ClientTardisRegistries.getTardisFromEntity(this.position(), this.level().dimension());
+            if (ClientTardisRegistries.getTardis(ID) == null)
+                return PlayState.STOP;
+            else
+                return ClientTardisRegistries.getTardis(ID).getDoorState() ?
+                    state.setAndContinue(IDLE_OPEN) :
+                    state.setAndContinue(IDLE_CLOSED);  
+        })
+            .triggerableAnim("set_on", OPEN)
+            .triggerableAnim("set_off", CLOSE)
+        );
     }
 
     @Override
@@ -97,19 +132,18 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     @Override
     public void tick() {
         super.tick();
-        if (onGround()) // ensure block alignement and rotation modulo.
+        if (onGround()) {// ensure block alignement and rotation modulo.
             if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0 || this.yBodyRot != 0) {
                 this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
                 this.setYRot(0f);
                 this.setYHeadRot(0f);
                 this.yBodyRot = 0f;
-                if (!level().isClientSide())
-                    TardisRegistries.getTardis(ID).updatePosition(this);
                 this.hasImpulse = true; // inform MC that position changed to update clients
             }
-        else
-            if (!level().isClientSide() && !onGround())
-                TardisRegistries.getTardis(ID).updatePosition(this);
+        }
+        
+        if (!level().isClientSide() && TardisRegistries.getTardis(ID) != null && TardisRegistries.getTardis(ID).getPosition() != this.position())
+            TardisRegistries.getTardis(ID).updatePosition(this);
     }
 
     // override damages, unless if done by command or in mod logic
@@ -152,9 +186,18 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public void readAdditionalSaveData(CompoundTag compound) {
         CompoundTag tardisData = compound.getCompound("TardisData");
         if (!tardisData.contains("ID") && !level().isClientSide())
+        {
             ID = TardisRegistries.createTardis(this).id(); // create new Tardis on spawn
-        else 
+        }
+        else
+        {
             ID = UnsignedInteger.fromIntBits(tardisData.getInt("ID")); // just regular loading, not a spawn
+        }
+        if (!level().isClientSide())
+        {
+            if (TardisRegistries.getTardis(ID) != null)
+                TardisRegistries.getTardis(ID).door_state_dependants.add(this);
+        }
         super.readAdditionalSaveData(compound);
     }
 
@@ -177,7 +220,10 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public void die(DamageSource cause) {
         super.die(cause);
         if (!level().isClientSide() && ID != null)
+        {
+            TardisRegistries.getTardis(ID).door_state_dependants.remove(this);
             TardisRegistries.deleteTardis(ID, this.level().getServer());
+        }
     }
 
     @Override // TODO - add actual colliders depending on state
@@ -185,6 +231,38 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public List<AABB> getColliders() 
     {
         return PHYSIC_COLLIDERS;
+    }
+
+
+
+    @Override
+    public void triggerAnimBroad(@Nullable String controllerName, String animName) {
+        if (!(this.level() instanceof ServerLevel sl))
+            return;
+
+        final String controller = controllerName == null ? "" : controllerName;
+
+        // Rayon "large" (en blocs) pour attraper les joueurs pertinents même si tracking=0
+        final double radius = 256.0d;
+
+        Set<ServerPlayer> targets = new LinkedHashSet<>();
+
+        // 1) Joueurs qui trackent le bloc/chunk (chemin normal)
+        targets.addAll(PlayerLookup.tracking(sl, this.blockPosition()));
+
+        // 2) Joueurs proches (au cas où tracking bug)
+        targets.addAll(PlayerLookup.around(sl, Vec3.atCenterOf(this.blockPosition()), radius));
+
+        // 3) Fallback "large": tous les joueurs de ce ServerLevel si toujours vide
+        if (targets.isEmpty()) {
+            targets.addAll(sl.players());
+        }
+
+        var pkt = new EntityAnimTriggerPacket(this.getId(), false, controller, animName);
+
+        for (ServerPlayer p : targets) {
+            GeckoLibServices.NETWORK.sendToPlayer(pkt, p);
+        }
     }
 
 

@@ -1,7 +1,9 @@
 package ender.dwmod.tardis.systems.architecturalReconfiguration;
 
 import ender.dwmod.DwMod;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.phys.Vec3;
 
 public class Rooms {
 
@@ -48,5 +50,36 @@ public class Rooms {
             }
         }
         return pathArray;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static Vec3 getFeaturePos(String structureName, String featureName, BlockPos worldPosition) {
+        return switch (structureName) {
+            case CONSOLE_ROOM.DEFAULT.NAME -> switch (featureName) {
+                case "console_room_entrance" -> new Vec3(
+                    worldPosition.getX() + 14,
+                    worldPosition.getY() + 17.5,
+                    worldPosition.getZ() + 1.5
+                );
+                default -> null;
+            };
+            default -> null;
+        };
     }
 }
