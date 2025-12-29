@@ -50,6 +50,8 @@ public class DwModModelProvider implements DataProvider {
         // Barrier-like / invisible blocks: only emit the blockstate, model is a hand-authored file.
         CompletableFuture<?> f1 = saveSimpleBlockState(cachedOutput, BlockInit.DEFAULT_CONSOLE_INTERACT, EMPTY_MODEL);
         CompletableFuture<?> f2 = saveSimpleBlockState(cachedOutput, BlockInit.DEFAULT_CONSOLE, EMPTY_MODEL);
+        CompletableFuture<?> f3 = saveSimpleBlockState(cachedOutput, EndoshellBlocks.TARDIS_DEFAULT_EXT_DOOR, EMPTY_MODEL);
+        CompletableFuture<?> f4 = saveSimpleBlockState(cachedOutput, BlockInit.DEFAULT_EXT_DOOR_CORE, EMPTY_MODEL);
 
         // Building blocks: cube_all model + trivial blockstate.
         CompletableFuture<?>[] building = new CompletableFuture<?>[BUILDING_BLOCKS.length * 2];
@@ -67,7 +69,7 @@ public class DwModModelProvider implements DataProvider {
             building[i * 2 + 1] = saveSimpleBlockState(cachedOutput, block, modelId);
         }
 
-        return CompletableFuture.allOf(f1, f2, CompletableFuture.allOf(building));
+        return CompletableFuture.allOf(f1, f2, f3, f4, CompletableFuture.allOf(building));
     }
 
     private CompletableFuture<?> saveSimpleBlockState(CachedOutput cachedOutput, Block block, ResourceLocation modelId) {

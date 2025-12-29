@@ -196,6 +196,11 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
             targets.addAll(sl.players());
         }
 
+        // 4) Ultime fallback: tous les joueurs du serveur si toujours vide
+        if (targets.isEmpty()) {
+            targets.addAll(PlayerLookup.all(sl.getServer()));
+        }
+
         var pkt = new BlockEntityAnimTriggerPacket(this.worldPosition, controller, animName);
 
         for (ServerPlayer p : targets) {

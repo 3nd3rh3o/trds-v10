@@ -165,9 +165,9 @@ public class Room {
             consoleExtPortal.setOrientationRotation(DQuaternion.fromEulerAngle(new Vec3(0, 0, 0)));
             consoleExtPortal.setWidth(1.75);
             consoleExtPortal.setHeight(3);
-            consoleExtPortal.setOriginPos(o);
+            consoleExtPortal.setOriginPos(o.subtract(0, 0, 0.375)); // small offset to match exterior
             consoleExtPortal.setDestinationDimension(TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getDimension());
-            consoleExtPortal.setDestination(TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getPosition().add(0, 1.5, 0.5));
+            consoleExtPortal.setDestination(TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getPosition().add(0, 1.5, 0.875)); // small offset to match exterior
             consoleExtPortal.setRotation(DQuaternion.fromEulerAngle(new Vec3(0, 180, 0)));
             portalToExt = consoleExtPortal;
             server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).addFreshEntity(consoleExtPortal);
@@ -275,7 +275,7 @@ public class Room {
     public void updateConsoleRoomExit(Vec3 pos) {
         if (portalToExt == null)
             portalToExt = TardisRegistries.server.getLevel(DimensionRegistry.VORTEX_DIMENSION_KEY).getEntitiesOfClass(Portal.class, AABB.ofSize(getFeaturePos("console_room_entrance"), 2, 2, 2), e->true).getFirst();
-        portalToExt.setDestination(pos.add(new Vec3(0, 1.5, 0.5)));
+        portalToExt.setDestination(pos.add(0, 1.5, 0.875)); // small offset to match exterior
         portalToExt.reloadAndSyncToClientNextTick();
     }
 }

@@ -1,0 +1,238 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.ext_door.open": {
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"part0": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part1": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part2": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part3": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part4": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part5": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				},
+				"part6": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [3, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.ext_door.close": {
+			"animation_length": 1,
+			"override_previous_animation": true,
+			"bones": {
+				"part0": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part1": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part2": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part3": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part4": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part5": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"part6": {
+					"position": {
+						"0.0": {
+							"vector": [3, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.ext_door.idle_open": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"part0": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part1": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part2": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part3": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part4": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part5": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				},
+				"part6": {
+					"position": {
+						"vector": [3, 0, 0]
+					}
+				}
+			}
+		},
+		"animation.ext_door.idle_close": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"part0": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part1": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part2": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part3": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part4": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part5": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"part6": {
+					"position": {
+						"vector": [0, 0, 0]
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

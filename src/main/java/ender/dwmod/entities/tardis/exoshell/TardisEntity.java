@@ -1,8 +1,10 @@
 package ender.dwmod.entities.tardis.exoshell;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -38,7 +40,6 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.network.packet.EntityAnimTriggerPacket;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-
 // TODO - add Tracker for variables. 
 //      (server) TardisData -> (server) Entity -> (on change!)(client) Entity 
 //      also remember to send update packets to trigger animations.
@@ -52,34 +53,28 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class TardisEntity extends LivingEntity implements GeoEntity, IMultiCollidable, TardisAnimatable {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
-    private static final RawAnimation IDLE_OPEN = RawAnimation.begin().thenPlayAndHold("animation.exoshell_default.door.idle_open");
-    private static final RawAnimation IDLE_CLOSED = RawAnimation.begin().thenPlayAndHold("animation.exoshell_default.door.idle_closed");
+    private static final RawAnimation IDLE_OPEN = RawAnimation.begin()
+            .thenPlayAndHold("animation.exoshell_default.door.idle_open");
+    private static final RawAnimation IDLE_CLOSED = RawAnimation.begin()
+            .thenPlayAndHold("animation.exoshell_default.door.idle_closed");
     private static final RawAnimation OPEN = RawAnimation.begin().thenPlay("animation.exoshell_default.door.open");
     private static final RawAnimation CLOSE = RawAnimation.begin().thenPlay("animation.exoshell_default.door.close");
 
-
-
-
     private UnsignedInteger ID;
 
-    private static final List<AABB> PHYSIC_COLLIDERS;
+    private static final Map<String, List<AABB>> PHYSIC_COLLIDERS;
 
-    
     public TardisEntity(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
         hasImpulse = true;
     }
 
-    
-    
     @Override
     public AABB getBoundingBox() {
         if (!level().isClientSide)
             return getColliders().get(0).move(getX(), getY(), getZ());
         return super.getBoundingBox();
     }
-
-
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
@@ -94,13 +89,11 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
             if (ClientTardisRegistries.getTardis(ID) == null)
                 return PlayState.STOP;
             else
-                return ClientTardisRegistries.getTardis(ID).getDoorState() ?
-                    state.setAndContinue(IDLE_OPEN) :
-                    state.setAndContinue(IDLE_CLOSED);  
+                return ClientTardisRegistries.getTardis(ID).getDoorState() ? state.setAndContinue(IDLE_OPEN)
+                        : state.setAndContinue(IDLE_CLOSED);
         })
-            .triggerableAnim("set_on", OPEN)
-            .triggerableAnim("set_off", CLOSE)
-        );
+                .triggerableAnim("set_on", OPEN)
+                .triggerableAnim("set_off", CLOSE));
     }
 
     @Override
@@ -125,24 +118,25 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
 
     // clamp position to block center, and lock rotation
     // TODO - Portal logic
-    //      if door opened => 
-    //          if portal not present => spawn it
-    //          If falling => tp portal to the correct relative position
-    //      if door closed => if portal is present => remove portal
+    // if door opened =>
+    // if portal not present => spawn it
+    // If falling => tp portal to the correct relative position
+    // if door closed => if portal is present => remove portal
     @Override
     public void tick() {
         super.tick();
-        if (onGround()) {// ensure block alignement and rotation modulo.
-            if (((int)this.position().x) - this.position().x != 0 || ((int)this.position().z) - this.position().z != 0 || this.getRotationVector().y != 0 || this.yBodyRot != 0) {
-                this.setPos(((int)this.position().x), this.position().y, ((int)this.position().z));
-                this.setYRot(0f);
-                this.setYHeadRot(0f);
-                this.yBodyRot = 0f;
-                this.hasImpulse = true; // inform MC that position changed to update clients
-            }
+        // ensure block alignement and rotation modulo.
+        if (((int) this.position().x) - this.position().x != 0 || ((int) this.position().z) - this.position().z != 0
+                || this.getRotationVector().y != 0 || this.yBodyRot != 0) {
+            this.setPos(((int) this.position().x), this.position().y, ((int) this.position().z));
+            this.setYRot(0f);
+            this.setYHeadRot(0f);
+            this.yBodyRot = 0f;
+            this.hasImpulse = true; // inform MC that position changed to update clients
         }
-        
-        if (!level().isClientSide() && TardisRegistries.getTardis(ID) != null && TardisRegistries.getTardis(ID).getPosition() != this.position())
+
+        if (!level().isClientSide() && TardisRegistries.getTardis(ID) != null
+                && TardisRegistries.getTardis(ID).getPosition() != this.position())
             TardisRegistries.getTardis(ID).updatePosition(this);
     }
 
@@ -161,8 +155,6 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
         return;
     }
 
-    
-
     // make entity solid to other entities so they can walk on it
     @Override
     public boolean isPushable() {
@@ -180,21 +172,17 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public void push(Entity entity) {
         return;
     }
-    
+
     // On load ID from NBT
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         CompoundTag tardisData = compound.getCompound("TardisData");
-        if (!tardisData.contains("ID") && !level().isClientSide())
-        {
+        if (!tardisData.contains("ID") && !level().isClientSide()) {
             ID = TardisRegistries.createTardis(this).id(); // create new Tardis on spawn
-        }
-        else
-        {
+        } else {
             ID = UnsignedInteger.fromIntBits(tardisData.getInt("ID")); // just regular loading, not a spawn
         }
-        if (!level().isClientSide())
-        {
+        if (!level().isClientSide()) {
             if (TardisRegistries.getTardis(ID) != null)
                 TardisRegistries.getTardis(ID).door_state_dependants.add(this);
         }
@@ -219,21 +207,23 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
-        if (!level().isClientSide() && ID != null)
-        {
+        if (!level().isClientSide() && ID != null) {
             TardisRegistries.getTardis(ID).door_state_dependants.remove(this);
             TardisRegistries.deleteTardis(ID, this.level().getServer());
         }
     }
 
     @Override // TODO - add actual colliders depending on state
-                // and make the program use them !
-    public List<AABB> getColliders() 
-    {
-        return PHYSIC_COLLIDERS;
+              // and make the program use them !
+    public List<AABB> getColliders() {
+        if ((level().isClientSide() && ClientTardisRegistries.getTardis(ID) == null)
+                || (!level().isClientSide() && TardisRegistries.getTardis(ID) == null)) {
+            return PHYSIC_COLLIDERS.get("closed"); // security fallback
+        }
+        return PHYSIC_COLLIDERS
+                .get(level().isClientSide() ? ClientTardisRegistries.getTardis(ID).getDoorState() ? "open" : "closed"
+                        : TardisRegistries.getTardis(ID).getDoorState() ? "open" : "closed");
     }
-
-
 
     @Override
     public void triggerAnimBroad(@Nullable String controllerName, String animName) {
@@ -242,7 +232,8 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
 
         final String controller = controllerName == null ? "" : controllerName;
 
-        // Rayon "large" (en blocs) pour attraper les joueurs pertinents même si tracking=0
+        // Rayon "large" (en blocs) pour attraper les joueurs pertinents même si
+        // tracking=0
         final double radius = 256.0d;
 
         Set<ServerPlayer> targets = new LinkedHashSet<>();
@@ -258,6 +249,11 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
             targets.addAll(sl.players());
         }
 
+        // 4) Ultime fallback: tous les joueurs du serveur si toujours vide
+        if (targets.isEmpty()) {
+            targets.addAll(PlayerLookup.all(sl.getServer()));
+        }
+
         var pkt = new EntityAnimTriggerPacket(this.getId(), false, controller, animName);
 
         for (ServerPlayer p : targets) {
@@ -265,17 +261,33 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
         }
     }
 
+    private static Map<String, List<AABB>> genColliders() {
+        Map<String, List<AABB>> colliders = new HashMap<>();
 
-    
+        colliders.put("closed", List.of( // blockbench coords / 16
+                new AABB(-0.875, 0, -0.875, 0.875, 0.125, 0.875), // base
+                new AABB(-0.875, 0.125, -0.875, -0.75, 2.875, 0.875), // left
+                new AABB(0.75, 0.125, -0.875, 0.875, 2.875, 0.875), // right
+                new AABB(-0.75, 0.125, -0.875, 0.75, 2.875, -0.75), // back
+                new AABB(-0.875, 2.875, -0.875, 0.875, 3, 0.875), // roof
+                new AABB(-0.75, 0.125, 0.75, 0.75, 2.875, 0.875) // door
+        ));
+
+        colliders.put("open", List.of( // blockbench coords / 16
+                new AABB(-0.875, 0, -0.875, 0.875, 0.125, 0.875), // base
+                new AABB(-0.875, 0.125, -0.875, -0.75, 2.875, 0.875), // left
+                new AABB(0.75, 0.125, -0.875, 0.875, 2.875, 0.875), // right
+                new AABB(-0.75, 0.125, -0.875, 0.75, 2.875, -0.75), // back
+                new AABB(-0.875, 2.875, -0.875, 0.875, 3, 0.875) // roof
+        ));
+
+        return colliders;
+    }
+
     // TODO - change to a switch and add correct values
     static {
-            // SOUTH - DEFAULT / DOOR CLOSED
-        PHYSIC_COLLIDERS = List.of( // blockbench coords / 16
-            new AABB(-0.875, 0, -0.875, 0.875, 0.125, 0.875), // base
-            new AABB(-0.875, 0.125, -0.875, -0.75, 2.875, 0.875), // left
-            new AABB(0.75, 0.125, -0.875, 0.875, 2.875, 0.875), // right
-            new AABB(-0.75, 0.125, -0.875, 0.75, 2.875, -0.75), // back
-            new AABB(-0.875, 2.875, -0.875, 0.875, 3, 0.875) // roof
-        );
+        // SOUTH - DEFAULT / DOOR CLOSED
+        PHYSIC_COLLIDERS = genColliders();
+
     }
 }

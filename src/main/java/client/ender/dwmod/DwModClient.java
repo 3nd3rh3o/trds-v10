@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import client.ender.dwmod.blockEntity.console.DefaultConsoleRenderer;
+import client.ender.dwmod.blockEntity.defaultExtDoor.DefaultExtDoorRenderer;
 import client.ender.dwmod.entities.tardisEntity.TardisEntityRenderer;
 import ender.dwmod.DwMod;
 import ender.dwmod.block.BlockEntityInit;
@@ -36,6 +37,7 @@ public class DwModClient implements net.fabricmc.api.ClientModInitializer {
         
         EntityRendererRegistry.register(EntityInit.TARDIS, TardisEntityRenderer::new);
         BlockEntityRenderers.register(BlockEntityInit.DEFAULT_CONSOLE_BE, DefaultConsoleRenderer::new);
+        BlockEntityRenderers.register(BlockEntityInit.DEFAULT_EXT_DOOR_CORE_BE, DefaultExtDoorRenderer::new);
 
         TardisNetworking.registerClientReceivers();
 

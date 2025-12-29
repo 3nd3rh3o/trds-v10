@@ -7,6 +7,7 @@ import java.util.List;
 import com.google.common.primitives.UnsignedInteger;
 
 import ender.dwmod.DwMod;
+import ender.dwmod.block.tardis.complex.defaultExtDoor.TardisBooleanChangedNotify;
 import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
@@ -45,7 +46,7 @@ public class Tardis {
     
 
 
-    private static final Vec3 TEMP_VEC3 = new Vec3(0, 1.5, 0.5);
+    private static final Vec3 TEMP_VEC3 = new Vec3(0, 1.5, 0.875);
     private static final double TEMP_W = 1.75;
     private static final double TEMP_H = 3;
 
@@ -146,7 +147,7 @@ public class Tardis {
         if (exoshellPortal != null && (position.add(TEMP_VEC3).subtract(exoshellPortal.getOriginPos())).lengthSqr() > 1e-6)
         {
             exoshellPortal.setOriginPos(position.add(TEMP_VEC3));
-            exoshellPortal.reloadAndSyncToClientNextTick();
+            exoshellPortal.reloadAndSyncToClient();
             ars.updateConsoleRoomExit(position);
         }
         
@@ -168,8 +169,12 @@ public class Tardis {
         doorState = !doorState;
         broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState)), server);
         for (int i = 0; i < door_state_dependants.size(); i++)
+        {
             door_state_dependants.get(i).
                 triggerAnimBroad("door_state", doorState ? "set_on" : "set_off");
+            if (door_state_dependants.get(i) instanceof TardisBooleanChangedNotify notify)
+                notify.onTardisBooleanChanged("door_state", doorState);
+        }
     }
 
 
@@ -177,8 +182,12 @@ public class Tardis {
         internalLight = !internalLight;
         broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight)), server);
         for (int i = 0; i < internal_light_dependants.size(); i++)
+        {
             internal_light_dependants.get(i).
                         triggerAnimBroad("light_switch", internalLight ? "set_on" : "set_off");
+            if (internal_light_dependants.get(i) instanceof TardisBooleanChangedNotify notify)
+                notify.onTardisBooleanChanged("internal_light", internalLight);
+        }
     }
 
     private static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
@@ -244,7 +253,7 @@ public class Tardis {
 
         portal.setOriginPos(position.add(TEMP_VEC3));
         portal.setDestinationDimension(DimensionRegistry.VORTEX_DIMENSION_KEY);
-        portal.setDestination(ars.getConsoleRoomEntrance());
+        portal.setDestination(ars.getConsoleRoomEntrance().add(0, 0, -0.375));
         portal.setRotation(DQuaternion.fromEulerAngle(new Vec3(0, 180, 0)));
 
         originLevel.addFreshEntity(portal);
