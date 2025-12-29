@@ -11,6 +11,8 @@ import ender.dwmod.block.tardis.complex.defaultExtDoor.TardisBooleanChangedNotif
 import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
+import ender.dwmod.tardis.components.ExtDoor;
+import ender.dwmod.tardis.components.IComponent;
 import ender.dwmod.tardis.networking.EncodingHelpers;
 import ender.dwmod.tardis.systems.ArchitecturalReconfiguration;
 import ender.dwmod.tardis.systems.architecturalReconfiguration.Rooms;
@@ -38,9 +40,10 @@ public class Tardis {
     private ArchitecturalReconfiguration ars;
     private boolean internalLight = false;
     public List<TardisAnimatable> internal_light_dependants = new ArrayList<>();
-    private boolean doorState = false;
-    public List<TardisAnimatable> door_state_dependants = new ArrayList<>();
     private Portal exoshellPortal = null;
+
+    // used to store components (data holders, but some can be removed/added dynamically)
+    private final List<IComponent> components = new ArrayList<>();
 
 
     
@@ -51,12 +54,16 @@ public class Tardis {
     private static final double TEMP_H = 3;
 
     private Tardis() {
-
+        components.add(new ExtDoor());
     }
 
 
     // Used for NBT loading -> No events triggered.
     public Tardis(CompoundTag compound) {
+        this();
+
+
+
         this.id = UnsignedInteger.fromIntBits(compound.getInt("id"));
         this.position = new Vec3(
                 compound.getDouble("posX"),
@@ -72,8 +79,10 @@ public class Tardis {
         );
         this.ars = new ArchitecturalReconfiguration(id.intValue());
         this.ars.readNBT(compound.getCompound("ars"));
-        this.doorState = compound.getBoolean("door_state");
         this.internalLight = compound.getBoolean("internal_light");
+        for (IComponent component : components) {
+            component.readNBT(compound.getCompound(component.getName()));
+        }
     }
 
     // Used for NBT saving -> No events triggered.
@@ -86,8 +95,10 @@ public class Tardis {
         compound.putString("dimNamespace", dimension.location().getNamespace());
         compound.putString("dimPath", dimension.location().getPath());
         compound.put("ars", ars.toNBT());
-        compound.putBoolean("door_state", doorState);
         compound.putBoolean("internal_light", internalLight);
+        for (IComponent component : components) {
+            compound.put(component.getName(), component.writeNBT());
+        }
         return compound;
     }
 
@@ -98,6 +109,7 @@ public class Tardis {
          t.position = position;
          t.dimension = dimension;
          t.ars = new ArchitecturalReconfiguration(id.intValue());
+         
          return t;
     }
 
@@ -133,6 +145,8 @@ public class Tardis {
 
     }
 
+    
+
     public void tick(MinecraftServer server)
     {
         ars.tick(server);
@@ -159,25 +173,6 @@ public class Tardis {
     }
 
 
-    public boolean getDoorState() {
-        return doorState;
-    }
-
-    
-
-    public void toggleDoorState(MinecraftServer server) {
-        doorState = !doorState;
-        broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "door_state", EncodingHelpers.fromBoolean(doorState)), server);
-        for (int i = 0; i < door_state_dependants.size(); i++)
-        {
-            door_state_dependants.get(i).
-                triggerAnimBroad("door_state", doorState ? "set_on" : "set_off");
-            if (door_state_dependants.get(i) instanceof TardisBooleanChangedNotify notify)
-                notify.onTardisBooleanChanged("door_state", doorState);
-        }
-    }
-
-
     public void toggleInternalLight(MinecraftServer server) {
         internalLight = !internalLight;
         broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight)), server);
@@ -190,7 +185,7 @@ public class Tardis {
         }
     }
 
-    private static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
+    public static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
         for (ServerPlayer player : PlayerLookup.all(server))
         {
             ServerPlayNetworking.send(player, packet);
@@ -203,13 +198,6 @@ public class Tardis {
 
     public void clientSyncPosition(Vec3 vec3) {
         this.position = vec3;
-    }
-
-
-
-
-    public void clientSyncDoorState(boolean boolean1) {
-        doorState = boolean1;
     }
 
     public void clientSyncInternalLight(boolean boolean1) {
@@ -269,4 +257,18 @@ public class Tardis {
 	public ResourceKey<Level> getDimension() {
 		return dimension;
 	}
+
+    public IComponent getComponentByName(String name) {
+        for (IComponent component : components) {
+            if (component.getName().equals(name)) {
+                return component;
+            }
+        }
+        return null;
+    }
+
+
+    public UnsignedInteger getID() {
+        return id;
+    }
 }

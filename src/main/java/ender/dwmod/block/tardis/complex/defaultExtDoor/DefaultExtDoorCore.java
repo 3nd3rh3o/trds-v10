@@ -53,7 +53,7 @@ public class DefaultExtDoorCore extends HorizontalDirectionalBlock implements En
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {    
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         super.onRemove(state, level, pos, newState, movedByPiston);
         if (state.is(newState.getBlock()))
             return;
@@ -64,18 +64,12 @@ public class DefaultExtDoorCore extends HorizontalDirectionalBlock implements En
                 level.destroyBlock(basePos.above(y).relative(state.getValue(FACING).getCounterClockWise(), x), false);
     }
 
-
-    
-
-
-    
-
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
             BlockHitResult hitResult) {
         if (!level.isClientSide) {
             if (TardisRegistries.get(pos) != null) {
-                return ((DefaultExtDoorCoreBE)level.getBlockEntity(pos)).useItemOn();
+                return ((DefaultExtDoorCoreBE) level.getBlockEntity(pos)).useItemOn();
             }
         }
         return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -90,7 +84,12 @@ public class DefaultExtDoorCore extends HorizontalDirectionalBlock implements En
         for (int x = 0; x < 2; x++)
             for (int y = 0; y < 3; y++)
                 if (!(x == 0 && y == 1))
-                    level.setBlock(basePos.above(y).relative(facing.getCounterClockWise(), x), EndoshellBlocks.TARDIS_DEFAULT_EXT_DOOR.defaultBlockState().setValue(DefaultExtDoorInteract.FACING, facing).setValue(DefaultExtDoorInteract.POS, DefaultExtDoorInteract.Pos.valueOf(x, y)).setValue(DefaultExtDoorShapes.OPEN, open), Block.UPDATE_ALL);
+                    level.setBlock(basePos.above(y).relative(facing.getCounterClockWise(), x),
+                            EndoshellBlocks.TARDIS_DEFAULT_EXT_DOOR.defaultBlockState()
+                                    .setValue(DefaultExtDoorInteract.FACING, facing)
+                                    .setValue(DefaultExtDoorInteract.POS, DefaultExtDoorInteract.Pos.valueOf(x, y))
+                                    .setValue(DefaultExtDoorShapes.OPEN, open),
+                            Block.UPDATE_ALL);
     }
 
     @Override
@@ -112,13 +111,14 @@ public class DefaultExtDoorCore extends HorizontalDirectionalBlock implements En
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
             BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, BlockEntityInit.DEFAULT_EXT_DOOR_CORE_BE, DefaultExtDoorCoreBE::tick);
+        return createTickerHelper(blockEntityType, BlockEntityInit.DEFAULT_EXT_DOOR_CORE_BE,
+                DefaultExtDoorCoreBE::tick);
     }
-
 
     @SuppressWarnings("unchecked")
     @org.jetbrains.annotations.Nullable
-    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> serverType, BlockEntityType<E> clientType, BlockEntityTicker<? super E> ticker) {
+    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
+            BlockEntityType<A> serverType, BlockEntityType<E> clientType, BlockEntityTicker<? super E> ticker) {
         return clientType == serverType ? (@org.jetbrains.annotations.Nullable BlockEntityTicker<A>) ticker : null;
     }
 }

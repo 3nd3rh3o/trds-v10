@@ -12,6 +12,8 @@ import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.tardis.Interactible;
 import ender.dwmod.tardis.TardisRegistries;
+import ender.dwmod.tardis.components.ExtDoor;
+import ender.dwmod.tardis.components.IComponentListener;
 import ender.dwmod.utils.RayCastShape.Sphere;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.core.BlockPos;
@@ -35,7 +37,7 @@ import software.bernie.geckolib.network.packet.BlockEntityAnimTriggerPacket;
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, TardisAnimatable {
+public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, TardisAnimatable, IComponentListener {
     private static final boolean debugRayCast = true; // log in chat !
     // door switch
     private static final RawAnimation DOOR_SWITCH_SET_ON = RawAnimation.begin().thenPlay("animation.door_switch.set_on");
@@ -70,12 +72,12 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     public void registerControllers(ControllerRegistrar controllers) {
         if (!level.dimension().equals(DimensionRegistry.VORTEX_DIMENSION_KEY))
             return; // only animate in Tardis dimension
-        controllers.add( // door switch
-            new AnimationController<>(this, "door_state", 1, state -> {
+        controllers.add(
+            new AnimationController<>(this, "door_switch", 1, state -> {
                 if (ClientTardisRegistries.get(worldPosition) == null)
                     return PlayState.STOP;
                 else
-                    return ClientTardisRegistries.get(worldPosition).getDoorState() ? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
+                    return ClientTardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? state.setAndContinue(DOOR_SWITCH_IDLE_ON) : state.setAndContinue(DOOR_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", DOOR_SWITCH_SET_ON)
             .triggerableAnim("set_off", DOOR_SWITCH_SET_OFF)
@@ -125,7 +127,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
                     
                     if (!level.isClientSide)
                     {
-                        TardisRegistries.get(worldPosition).toggleDoorState(level.getServer());
+                        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
                     }
                 }
                 case 1 -> {
@@ -167,7 +169,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
                 return;
             }
             TardisRegistries.get(entity.worldPosition).internal_light_dependants.add(entity);
-            TardisRegistries.get(entity.worldPosition).door_state_dependants.add(entity);
+            entity.register();
             entity.isFirstTick = false;
         }
         
@@ -215,9 +217,28 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
             if (TardisRegistries.get(worldPosition) != null)
             {
                 TardisRegistries.get(worldPosition).internal_light_dependants.remove(this);
-                TardisRegistries.get(worldPosition).door_state_dependants.remove(this);
-            }
+                unRegister();
         }
         super.setRemoved();
     }   
+}
+
+
+
+    @Override
+    public void register() {
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_state");
+    }
+
+
+
+    @Override
+    public void unRegister() {
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_state");
+    }
+
+    @Override
+    public void onComponentValueChanged() {
+        triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
+    }
 }

@@ -191,6 +191,13 @@ public class DefaultConsoleInteract extends Block {
     }
 
     
+    
+    @Override
+    protected VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
+    }
+
+
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {

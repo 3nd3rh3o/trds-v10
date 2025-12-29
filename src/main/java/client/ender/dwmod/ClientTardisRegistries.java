@@ -19,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
 
 public final class ClientTardisRegistries {
     private static final List<Tardis> tardis = new ArrayList<>();
+
+
     public static List<Tardis> get()
     {
         return tardis;
@@ -49,23 +51,23 @@ public final class ClientTardisRegistries {
         {
             if (t.id().intValue() == packet.tardisID())
             {
-                switch (packet.category())
-                {
-                    case "exoshell" -> {
-                        switch (packet.key())
-                        {
-                            case "position" -> {
-                                t.clientSyncPosition(EncodingHelpers.toVec3(packet.value()));
-                            }
-                            case "door_state" -> {
-                                t.clientSyncDoorState(EncodingHelpers.toBoolean(packet.value()));
-                            }
-                            case "internal_light" -> {
-                                t.clientSyncInternalLight(EncodingHelpers.toBoolean(packet.value()));
+                if (packet.category().equals("extDoor"))
+                    t.getComponentByName(packet.category()).clientSyncValue(packet.key(), packet.value());
+                else
+                    switch (packet.category())
+                    {
+                        case "exoshell" -> {
+                            switch (packet.key())
+                            {
+                                case "position" -> {
+                                    t.clientSyncPosition(EncodingHelpers.toVec3(packet.value()));
+                                }
+                                case "internal_light" -> {
+                                    t.clientSyncInternalLight(EncodingHelpers.toBoolean(packet.value()));
+                                }
                             }
                         }
                     }
-                }
             }
         }
     }

@@ -10,6 +10,7 @@ import client.ender.dwmod.blockEntity.defaultExtDoor.DefaultExtDoorRenderer;
 import client.ender.dwmod.entities.tardisEntity.TardisEntityRenderer;
 import ender.dwmod.DwMod;
 import ender.dwmod.block.BlockEntityInit;
+import ender.dwmod.block.BlockInit;
 import ender.dwmod.entities.EntityInit;
 import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
@@ -24,6 +25,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,7 +43,16 @@ public class DwModClient implements net.fabricmc.api.ClientModInitializer {
 
         TardisNetworking.registerClientReceivers();
 
+        WorldRenderEvents.BLOCK_OUTLINE.register((worldRenderContext, blockOutlineContext) -> {
+            BlockState state = blockOutlineContext.blockState();
 
+            
+            if (state.is(BlockInit.DEFAULT_CONSOLE) || state.is(BlockInit.DEFAULT_CONSOLE_INTERACT)) {
+                return false; 
+            }
+
+            return true;
+        });
 
         // Render multiAABB
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> 

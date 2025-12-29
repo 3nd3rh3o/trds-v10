@@ -7,6 +7,8 @@ import client.ender.dwmod.ClientTardisRegistries;
 import ender.dwmod.block.BlockEntityInit;
 import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.tardis.TardisRegistries;
+import ender.dwmod.tardis.components.ExtDoor;
+import ender.dwmod.tardis.components.IComponentListener;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +29,7 @@ import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
 import software.bernie.geckolib.network.packet.BlockEntityAnimTriggerPacket;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity, TardisAnimatable, TardisBooleanChangedNotify {
+public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity, TardisAnimatable, TardisBooleanChangedNotify, IComponentListener {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     protected boolean isFirstTick = true; // only used on client side for light rendering.
     private int coolDown = 0;
@@ -47,7 +49,7 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
     public void registerControllers(ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "door_state", 1, state -> {
             if (ClientTardisRegistries.get(this.worldPosition) != null)
-                return ClientTardisRegistries.get(worldPosition).getDoorState() ? state.setAndContinue(IDLE_OPEN) : state.setAndContinue(IDLE_CLOSED);
+                return ClientTardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? state.setAndContinue(IDLE_OPEN) : state.setAndContinue(IDLE_CLOSED);
             return PlayState.STOP;
         })
         .triggerableAnim("set_on", OPEN)
@@ -59,9 +61,9 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
     {
         if (!level.isClientSide)
         {
-            if (TardisRegistries.get(worldPosition) != null && coolDown == 0)
+            if (TardisRegistries.get(worldPosition) != null && coolDown == 0 && !TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_locked"))
             {
-                TardisRegistries.get(worldPosition).toggleDoorState(level.getServer());
+                TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
                 coolDown = 20; // 1 second of cooldown between door toggles
                 return InteractionResult.SUCCESS;
             }
@@ -118,9 +120,7 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
                 entity.isFirstTick = false; // ignore when not inside a Tardis
                 return;
             }
-            TardisRegistries.get(entity.worldPosition).door_state_dependants.add(entity);
-            if (TardisRegistries.get(entity.worldPosition).getDoorState() != blockState.getValue(DefaultExtDoorShapes.OPEN))
-                entity.onTardisBooleanChanged("door_state", TardisRegistries.get(entity.worldPosition).getDoorState());
+            entity.register();
             entity.isFirstTick = false;
         }
         if (!world.isClientSide())
@@ -136,7 +136,7 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
         {
             if (TardisRegistries.get(worldPosition) != null)
             {
-                TardisRegistries.get(worldPosition).door_state_dependants.remove(this);
+                unRegister();
             }
         }
         super.setRemoved();
@@ -147,6 +147,25 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
         if (key.equals("door_state"))
         {
             level.setBlock(worldPosition, level.getBlockState(worldPosition).setValue(DefaultExtDoorShapes.OPEN, value), Block.UPDATE_ALL);
+        }
+    }
+
+    @Override
+    public void register() {
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_state");
+    }
+
+    @Override
+    public void unRegister() {
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_state");
+    }
+
+    @Override
+    public void onComponentValueChanged() {
+        triggerAnimBroad("door_state", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
+        if (this.getBlockState().getValue(DefaultExtDoorShapes.OPEN) != TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state"))
+        {
+            level.setBlock(worldPosition, level.getBlockState(worldPosition).setValue(DefaultExtDoorShapes.OPEN, TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state")), Block.UPDATE_ALL);
         }
     }
 }

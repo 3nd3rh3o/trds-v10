@@ -86,7 +86,7 @@ public class DefaultConsole extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return Shapes.empty();
     }
 
     @Override
@@ -95,6 +95,7 @@ public class DefaultConsole extends BaseEntityBlock {
         return SHAPE;
     }
 
+    
 
     @Override
     public RenderShape getRenderShape(BlockState state) {

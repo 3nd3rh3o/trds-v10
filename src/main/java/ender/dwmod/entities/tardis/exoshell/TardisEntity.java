@@ -15,6 +15,7 @@ import client.ender.dwmod.ClientTardisRegistries;
 import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.entities.IMultiCollidable;
 import ender.dwmod.tardis.TardisRegistries;
+import ender.dwmod.tardis.components.ExtDoor;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -89,7 +90,7 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
             if (ClientTardisRegistries.getTardis(ID) == null)
                 return PlayState.STOP;
             else
-                return ClientTardisRegistries.getTardis(ID).getDoorState() ? state.setAndContinue(IDLE_OPEN)
+                return ClientTardisRegistries.getTardis(ID).getComponentByName(ExtDoor.name()).getValue("door_state") ? state.setAndContinue(IDLE_OPEN)
                         : state.setAndContinue(IDLE_CLOSED);
         })
                 .triggerableAnim("set_on", OPEN)
@@ -182,10 +183,6 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
         } else {
             ID = UnsignedInteger.fromIntBits(tardisData.getInt("ID")); // just regular loading, not a spawn
         }
-        if (!level().isClientSide()) {
-            if (TardisRegistries.getTardis(ID) != null)
-                TardisRegistries.getTardis(ID).door_state_dependants.add(this);
-        }
         super.readAdditionalSaveData(compound);
     }
 
@@ -208,7 +205,6 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
     public void die(DamageSource cause) {
         super.die(cause);
         if (!level().isClientSide() && ID != null) {
-            TardisRegistries.getTardis(ID).door_state_dependants.remove(this);
             TardisRegistries.deleteTardis(ID, this.level().getServer());
         }
     }
@@ -221,8 +217,8 @@ public class TardisEntity extends LivingEntity implements GeoEntity, IMultiColli
             return PHYSIC_COLLIDERS.get("closed"); // security fallback
         }
         return PHYSIC_COLLIDERS
-                .get(level().isClientSide() ? ClientTardisRegistries.getTardis(ID).getDoorState() ? "open" : "closed"
-                        : TardisRegistries.getTardis(ID).getDoorState() ? "open" : "closed");
+                .get(level().isClientSide() ? ClientTardisRegistries.getTardis(ID).getComponentByName(ExtDoor.name()).getValue("door_state") ? "open" : "closed"
+                        : TardisRegistries.getTardis(ID).getComponentByName(ExtDoor.name()).getValue("door_state") ? "open" : "closed");
     }
 
     @Override
