@@ -61,7 +61,7 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
     {
         if (!level.isClientSide)
         {
-            if (TardisRegistries.get(worldPosition) != null && coolDown == 0 && !TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_locked"))
+            if (TardisRegistries.get(worldPosition) != null && coolDown == 0 && !TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_lock"))
             {
                 TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
                 coolDown = 20; // 1 second of cooldown between door toggles
@@ -161,7 +161,7 @@ public class DefaultExtDoorCoreBE extends BlockEntity implements GeoBlockEntity,
     }
 
     @Override
-    public void onComponentValueChanged() {
+    public void onComponentValueChanged(String name) {
         triggerAnimBroad("door_state", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
         if (this.getBlockState().getValue(DefaultExtDoorShapes.OPEN) != TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state"))
         {

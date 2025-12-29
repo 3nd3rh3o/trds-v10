@@ -114,6 +114,65 @@
 					}
 				}
 			}
+		},
+		"animation.door_lock.set_on": {
+			"animation_length": 0.5,
+			"override_previous_animation": true,
+			"bones": {
+				"bone3": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.5": {
+							"vector": [105, 0, 0],
+							"easing": "easeInQuad"
+						}
+					}
+				}
+			}
+		},
+		"animation.door_lock.set_off": {
+			"animation_length": 0.5,
+			"override_previous_animation": true,
+			"bones": {
+				"bone3": {
+					"rotation": {
+						"0.0": {
+							"vector": [105, 0, 0]
+						},
+						"0.5": {
+							"vector": [0, 0, 0],
+							"easing": "easeOutQuad"
+						}
+					}
+				}
+			}
+		},
+		"animation.door_lock.idle_on": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"bone3": {
+					"rotation": {
+						"vector": [105, 0, 0]
+					}
+				}
+			}
+		},
+		"animation.door_lock.idle_off": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"door_lock": {
+					"rotation": {
+						"vector": [0, 0, 0]
+					}
+				},
+				"bone3": {
+					"rotation": {
+						"vector": [0, 0, 0]
+					}
+				}
+			}
 		}
 	},
 	"geckolib_format_version": 2

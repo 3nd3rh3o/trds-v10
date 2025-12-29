@@ -17,7 +17,7 @@ public class ExtDoor implements IComponent {
 
     private final Map<String, Boolean> boolVars = new HashMap<>() {{
         put("door_state", false); // false = closed, true = open
-        put("door_locked", false);
+        put("door_lock", false);
     }};
     private final Map<String, List<IComponentListener>> listeners = new HashMap<>();
 
@@ -62,7 +62,7 @@ public class ExtDoor implements IComponent {
             Tardis.broadcast(TardisRegistries.createValueNotifyPacket(id, getName(), name, EncodingHelpers.fromBoolean(!currentValue)), server);
             if (listeners.containsKey(name)) {
                 for (IComponentListener listener : listeners.get(name)) {
-                    listener.onComponentValueChanged();
+                    listener.onComponentValueChanged(name);
                 }
             }
         } else {
@@ -78,7 +78,7 @@ public class ExtDoor implements IComponent {
             Tardis.broadcast(TardisRegistries.createValueNotifyPacket(id, getName(), name, EncodingHelpers.fromBoolean(value)), server);
             if (listeners.containsKey(name)) {
                 for (IComponentListener listener : listeners.get(name)) {
-                    listener.onComponentValueChanged();
+                    listener.onComponentValueChanged(name);
                 }
             }
         } else {

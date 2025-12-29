@@ -49,13 +49,19 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     private static final RawAnimation LIGHT_SWITCH_SET_OFF = RawAnimation.begin().thenPlay("animation.light_switch.set_off");
     private static final RawAnimation LIGHT_SWITCH_IDLE_OFF = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_off");
     private static final RawAnimation LIGHT_SWITCH_IDLE_ON = RawAnimation.begin().thenPlayAndHold("animation.light_switch.idle_on");
+    // door lock
+    private static final RawAnimation DOOR_LOCK_SET_ON = RawAnimation.begin().thenPlay("animation.door_lock.set_on");
+    private static final RawAnimation DOOR_LOCK_SET_OFF = RawAnimation.begin().thenPlay("animation.door_lock.set_off");
+    private static final RawAnimation DOOR_LOCK_IDLE_OFF = RawAnimation.begin().thenPlayAndHold("animation.door_lock.idle_off");
+    private static final RawAnimation DOOR_LOCK_IDLE_ON = RawAnimation.begin().thenPlayAndHold("animation.door_lock.idle_on");
 
     public boolean isFirstTick = true;
 
 
     private final List<Interactible> INTERACTIBLES = List.of( // use blockbench coords / 16 - (0, 0.5, 0)
         new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20), // door switch
-        new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 10) // light switch
+        new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 10), // light switch
+        new Interactible(new Sphere(new Vec3(0.1875, 0.6588125, -0.62820625), 0.1f), 10) // door lock
     );
 
 
@@ -92,7 +98,17 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
             })
             .triggerableAnim("set_on", LIGHT_SWITCH_SET_ON)
             .triggerableAnim("set_off", LIGHT_SWITCH_SET_OFF)
-        );        
+        );
+        controllers.add(
+            new AnimationController<>(this, "door_lock", 1, state -> {
+                if (ClientTardisRegistries.get(worldPosition) == null)
+                    return PlayState.STOP;
+                else
+                    return ClientTardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_lock") ? state.setAndContinue(DOOR_LOCK_IDLE_ON) : state.setAndContinue(DOOR_LOCK_IDLE_OFF);
+            })
+            .triggerableAnim("set_on", DOOR_LOCK_SET_ON)
+            .triggerableAnim("set_off", DOOR_LOCK_SET_OFF)
+        );
     }
 
     @Override
@@ -119,31 +135,22 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
         }
         if (level.dimension().equals(DimensionRegistry.VORTEX_DIMENSION_KEY)) // only work in Tardis dimension
         {
-            switch (pH)
-            {
-                case 0 -> {
-                    if (!level.isClientSide && debugRayCast)
-                        DwMod.LOGGER.info("DefaultConsoleBE interacted : door switch");
-                    
-                    if (!level.isClientSide)
-                    {
-                        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
+            if (!level.isClientSide && debugRayCast)
+                DwMod.LOGGER.info("DefaultConsoleBE interacted ray info : hit shape index : {}", pH);
+            if (!level.isClientSide)
+                switch (pH)
+                {
+                    case 0 -> 
+                            TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
+                    case 1 -> 
+                            TardisRegistries.get(worldPosition).toggleInternalLight(level.getServer());
+                    case 2 ->
+                            TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_lock");
+                    default -> {
+                        // no interaction
                     }
-                }
-                case 1 -> {
-                    if (!level.isClientSide && debugRayCast)
-                        DwMod.LOGGER.info("DefaultConsoleBE interacted : light switch");
-                    
-                    if (!level.isClientSide)
-                    {
-                        TardisRegistries.get(worldPosition).toggleInternalLight(level.getServer());
-                    }
-                }
-                default -> {
-                    // no interaction
-                }
 
-            }
+                }
         }
         if (pH != -1)
         {
@@ -228,6 +235,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     @Override
     public void register() {
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_state");
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_lock");
     }
 
 
@@ -235,10 +243,14 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     @Override
     public void unRegister() {
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_state");
+        TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_lock");
     }
 
     @Override
-    public void onComponentValueChanged() {
-        triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
+    public void onComponentValueChanged(String name) {
+        switch (name) {
+            case "door_state" -> triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
+            case "door_lock" -> triggerAnimBroad("door_lock", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_lock") ? "set_on" : "set_off");
+        }
     }
 }
