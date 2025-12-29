@@ -20,7 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.util.StringRepresentable;
 
 public class DefaultConsoleInteract extends Block {
-    private enum Pos implements StringRepresentable {
+    enum Pos implements StringRepresentable {
         N("n"), NE("ne"), NW("nw"), S("s"), SE("se"), SW("sw"), E("e"), W("w"), NONE("none"), C("c");
         // TODO - add up_center ! to have a nice hitbox on the rotor
         private final String name;
@@ -35,8 +35,6 @@ public class DefaultConsoleInteract extends Block {
         }
     }
 
-    private static final VoxelShape SHAPE = Shapes.box(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    private static final VoxelShape SHAPE_UP = Shapes.box(0.0f, 0.0f, 0.0f, 1.0f, 0.2f, 1.0f);
     private static final BooleanProperty UP = BooleanProperty.create("up");
     private static final EnumProperty<Pos> POS = EnumProperty.create("pos", Pos.class);
 
@@ -164,17 +162,17 @@ public class DefaultConsoleInteract extends Block {
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
             CollisionContext context) {
         if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
-            return SHAPE_UP;
+            return DefaultConsoleShapes.SHAPES_UP.get(state.getValue(POS));
         else
-            return SHAPE;
+            return DefaultConsoleShapes.SHAPES_DOWN.get(state.getValue(POS));
     }
 
     @Override
     protected VoxelShape getInteractionShape(BlockState state, BlockGetter level, BlockPos pos) {
         if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
-            return SHAPE_UP;
+            return DefaultConsoleShapes.SHAPES_UP.get(state.getValue(POS));
         else
-            return SHAPE;
+            return DefaultConsoleShapes.SHAPES_DOWN.get(state.getValue(POS));
     }
 
     @Override
@@ -185,9 +183,9 @@ public class DefaultConsoleInteract extends Block {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (state.getValue(UP) && !state.getValue(POS).equals(Pos.C))
-            return SHAPE_UP;
+            return DefaultConsoleShapes.SHAPES_UP.get(state.getValue(POS));
         else
-            return SHAPE;
+            return DefaultConsoleShapes.SHAPES_DOWN.get(state.getValue(POS));
     }
 
     
