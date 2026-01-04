@@ -7,12 +7,12 @@ import java.util.List;
 import com.google.common.primitives.UnsignedInteger;
 
 import ender.dwmod.DwMod;
-import ender.dwmod.block.tardis.complex.defaultExtDoor.TardisBooleanChangedNotify;
 import ender.dwmod.block.tardis.exoshell.TardisAnimatable;
 import ender.dwmod.dimensions.DimensionRegistry;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
 import ender.dwmod.tardis.components.ExtDoor;
 import ender.dwmod.tardis.components.IComponent;
+import ender.dwmod.tardis.components.Interrior;
 import ender.dwmod.tardis.networking.EncodingHelpers;
 import ender.dwmod.tardis.systems.ArchitecturalReconfiguration;
 import ender.dwmod.tardis.systems.architecturalReconfiguration.Rooms;
@@ -38,7 +38,6 @@ public class Tardis {
     private Vec3 position;
     private ResourceKey<Level> dimension;
     private ArchitecturalReconfiguration ars;
-    private boolean internalLight = false;
     public List<TardisAnimatable> internal_light_dependants = new ArrayList<>();
     private Portal exoshellPortal = null;
 
@@ -55,6 +54,7 @@ public class Tardis {
 
     private Tardis() {
         components.add(new ExtDoor());
+        components.add(new Interrior());
     }
 
 
@@ -79,7 +79,6 @@ public class Tardis {
         );
         this.ars = new ArchitecturalReconfiguration(id.intValue());
         this.ars.readNBT(compound.getCompound("ars"));
-        this.internalLight = compound.getBoolean("internal_light");
         for (IComponent component : components) {
             component.readNBT(compound.getCompound(component.getName()));
         }
@@ -95,7 +94,6 @@ public class Tardis {
         compound.putString("dimNamespace", dimension.location().getNamespace());
         compound.putString("dimPath", dimension.location().getPath());
         compound.put("ars", ars.toNBT());
-        compound.putBoolean("internal_light", internalLight);
         for (IComponent component : components) {
             compound.put(component.getName(), component.writeNBT());
         }
@@ -167,24 +165,6 @@ public class Tardis {
         
     }
 
-
-    public boolean getInternalLight() {
-        return internalLight;
-    }
-
-
-    public void toggleInternalLight(MinecraftServer server) {
-        internalLight = !internalLight;
-        broadcast(TardisRegistries.createValueNotifyPacket(id, "exoshell", "internal_light", EncodingHelpers.fromBoolean(internalLight)), server);
-        for (int i = 0; i < internal_light_dependants.size(); i++)
-        {
-            internal_light_dependants.get(i).
-                        triggerAnimBroad("light_switch", internalLight ? "set_on" : "set_off");
-            if (internal_light_dependants.get(i) instanceof TardisBooleanChangedNotify notify)
-                notify.onTardisBooleanChanged("internal_light", internalLight);
-        }
-    }
-
     public static void broadcast(CustomPacketPayload packet, MinecraftServer server) {
         for (ServerPlayer player : PlayerLookup.all(server))
         {
@@ -198,10 +178,6 @@ public class Tardis {
 
     public void clientSyncPosition(Vec3 vec3) {
         this.position = vec3;
-    }
-
-    public void clientSyncInternalLight(boolean boolean1) {
-        internalLight = boolean1;
     }
 
 

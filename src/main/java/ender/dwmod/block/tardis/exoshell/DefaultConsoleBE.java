@@ -94,7 +94,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
                     if (ClientTardisRegistries.get(worldPosition) == null)
                         return PlayState.STOP;
                     else
-                        return ClientTardisRegistries.get(worldPosition).getInternalLight() ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
+                        return ClientTardisRegistries.get(worldPosition).getComponentByName("interrior").getValue("light_state") ? state.setAndContinue(LIGHT_SWITCH_IDLE_ON) : state.setAndContinue(LIGHT_SWITCH_IDLE_OFF);
             })
             .triggerableAnim("set_on", LIGHT_SWITCH_SET_ON)
             .triggerableAnim("set_off", LIGHT_SWITCH_SET_OFF)
@@ -143,7 +143,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
                     case 0 -> 
                             TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_state");
                     case 1 -> 
-                            TardisRegistries.get(worldPosition).toggleInternalLight(level.getServer());
+                            TardisRegistries.get(worldPosition).getComponentByName("interrior").toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "light_state");
                     case 2 ->
                             TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_lock");
                     default -> {
@@ -236,6 +236,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     public void register() {
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_state");
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).registerListener(this, "door_lock");
+        TardisRegistries.get(worldPosition).getComponentByName("interrior").registerListener(this, "light_state");
     }
 
 
@@ -244,6 +245,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     public void unRegister() {
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_state");
         TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).unRegisterListener(this, "door_lock");
+        TardisRegistries.get(worldPosition).getComponentByName("interrior").unRegisterListener(this, "light_state");
     }
 
     @Override
@@ -251,6 +253,7 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
         switch (name) {
             case "door_state" -> triggerAnimBroad("door_switch", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_state") ? "set_on" : "set_off");
             case "door_lock" -> triggerAnimBroad("door_lock", TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).getValue("door_lock") ? "set_on" : "set_off");
+            case "light_state" -> triggerAnimBroad("light_switch", TardisRegistries.get(worldPosition).getComponentByName("interrior").getValue("light_state") ? "set_on" : "set_off");
         }
     }
 }

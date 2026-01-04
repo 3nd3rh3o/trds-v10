@@ -232,7 +232,7 @@ public class Room {
 
     private void updateLighting(MinecraftServer server)
     {
-        boolean lit = TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getInternalLight();
+        boolean lit = TardisRegistries.getTardis(worldPosToInstanceID(worldPosition)).getComponentByName("interrior").getValue("light_state");
         for (int x = 0; x < size.getX() * ArchitecturalReconfiguration.VOLUME_BLOCKS; x++)
         {
             for (int y = 0; y < size.getY() * ArchitecturalReconfiguration.VOLUME_BLOCKS; y++)

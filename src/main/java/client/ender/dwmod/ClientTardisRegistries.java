@@ -51,7 +51,7 @@ public final class ClientTardisRegistries {
         {
             if (t.id().intValue() == packet.tardisID())
             {
-                if (packet.category().equals("extDoor"))
+                if (!packet.category().equals("exoshell"))
                     t.getComponentByName(packet.category()).clientSyncValue(packet.key(), packet.value());
                 else
                     switch (packet.category())
@@ -61,9 +61,6 @@ public final class ClientTardisRegistries {
                             {
                                 case "position" -> {
                                     t.clientSyncPosition(EncodingHelpers.toVec3(packet.value()));
-                                }
-                                case "internal_light" -> {
-                                    t.clientSyncInternalLight(EncodingHelpers.toBoolean(packet.value()));
                                 }
                             }
                         }
