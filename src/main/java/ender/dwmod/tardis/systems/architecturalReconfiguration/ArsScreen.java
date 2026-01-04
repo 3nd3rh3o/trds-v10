@@ -24,7 +24,4 @@ public class ArsScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
-
-    
-    
 }
