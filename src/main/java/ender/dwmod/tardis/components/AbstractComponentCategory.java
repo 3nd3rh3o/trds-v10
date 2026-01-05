@@ -15,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 
 public class AbstractComponentCategory implements IComponent {
     protected Map<String, Boolean> boolVars = new HashMap<>();
+    protected Map<String, String> stringVars = new HashMap<>();
     private final Map<String, List<IComponentListener>> listeners = new HashMap<>();
 
 
@@ -59,7 +60,8 @@ public class AbstractComponentCategory implements IComponent {
                     listener.onComponentValueChanged(name);
                 }
             }
-        } else {
+        } 
+        else {
             DwMod.LOGGER.warn("Attempted to toggle unknown value: " + name);
         }
     }
@@ -74,15 +76,36 @@ public class AbstractComponentCategory implements IComponent {
                     listener.onComponentValueChanged(name);
                 }
             }
-        } else {
+        }
+        else {
             DwMod.LOGGER.warn("Attempted to set unknown value: " + name);
         }
     }
 
     @Override
+    public void setValue(MinecraftServer server, UnsignedInteger id, String name, String value) {
+        if (stringVars.containsKey(name)) {
+            stringVars.replace(name, value);
+            Tardis.broadcast(TardisRegistries.createValueNotifyPacket(id, getName(), name, value), server);
+            if (listeners.containsKey(name)) {
+                for (IComponentListener listener : listeners.get(name)) {
+                    listener.onComponentValueChanged(name);
+                }
+            }
+        }
+        else {
+            DwMod.LOGGER.warn("Attempted to set unknown value: " + name);
+        }
+    }
+
+
+
+    @Override
     public void clientSyncValue(String name, String value) {
         if (boolVars.containsKey(name)) {
             boolVars.replace(name, EncodingHelpers.toBoolean(value));
+        } else if (stringVars.containsKey(name)) {
+            stringVars.replace(name, value);
         } else {
             DwMod.LOGGER.warn("Attempted to client sync unknown value: " + name);
         }
@@ -114,6 +137,16 @@ public class AbstractComponentCategory implements IComponent {
     }
 
     @Override
+    public String getStringValue(String name) {
+        if (stringVars.containsKey(name)) {
+            return stringVars.get(name);
+        } else {
+            DwMod.LOGGER.warn("Attempted to get unknown value: " + name);
+            return "";
+        }
+    }
+
+    @Override
     public String getName() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getName'");
@@ -125,6 +158,9 @@ public class AbstractComponentCategory implements IComponent {
         for (Map.Entry<String, Boolean> entry : boolVars.entrySet()) {
             compound.putBoolean(entry.getKey(), entry.getValue());
         }
+        for (Map.Entry<String, String> entry : stringVars.entrySet()) {
+            compound.putString(entry.getKey(), entry.getValue());
+        }
         return compound;
     }
 
@@ -133,6 +169,11 @@ public class AbstractComponentCategory implements IComponent {
         for (String key : boolVars.keySet()) {
             if (compound.contains(key)) {
                 boolVars.replace(key, compound.getBoolean(key));
+            }
+        }
+        for (String key : stringVars.keySet()) {
+            if (compound.contains(key)) {
+                stringVars.replace(key, compound.getString(key));
             }
         }
     }

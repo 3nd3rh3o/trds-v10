@@ -13,6 +13,7 @@ import ender.dwmod.entities.tardis.exoshell.TardisEntity;
 import ender.dwmod.tardis.components.ExtDoor;
 import ender.dwmod.tardis.components.IComponent;
 import ender.dwmod.tardis.components.Interrior;
+import ender.dwmod.tardis.components.Terminal;
 import ender.dwmod.tardis.networking.EncodingHelpers;
 import ender.dwmod.tardis.systems.ArchitecturalReconfiguration;
 import ender.dwmod.tardis.systems.architecturalReconfiguration.Rooms;
@@ -55,6 +56,7 @@ public class Tardis {
     private Tardis() {
         components.add(new ExtDoor());
         components.add(new Interrior());
+        components.add(new Terminal());
     }
 
 

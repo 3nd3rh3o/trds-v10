@@ -14,8 +14,10 @@ import ender.dwmod.tardis.Interactible;
 import ender.dwmod.tardis.TardisRegistries;
 import ender.dwmod.tardis.components.ExtDoor;
 import ender.dwmod.tardis.components.IComponentListener;
+import ender.dwmod.tardis.systems.consoleTerminal.TerminalScreen;
 import ender.dwmod.utils.RayCastShape.Sphere;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,7 +63,8 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
     private final List<Interactible> INTERACTIBLES = List.of( // use blockbench coords / 16 - (0, 0.5, 0)
         new Interactible(new Sphere(new Vec3(0.0, 0.55, -0.975), 0.1f), 20), // door switch
         new Interactible(new Sphere(new Vec3(-0.1875, 0.6588125, -0.62820625), 0.1f), 10), // light switch
-        new Interactible(new Sphere(new Vec3(0.1875, 0.6588125, -0.62820625), 0.1f), 10) // door lock
+        new Interactible(new Sphere(new Vec3(0.1875, 0.6588125, -0.62820625), 0.1f), 10), // door lock
+        new Interactible(new Sphere(new Vec3(-0.875, 0.5625, 0.25), 0.15f), 1)// Console screen
     );
 
 
@@ -146,6 +149,8 @@ public class DefaultConsoleBE extends BlockEntity implements GeoBlockEntity, Tar
                             TardisRegistries.get(worldPosition).getComponentByName("interrior").toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "light_state");
                     case 2 ->
                             TardisRegistries.get(worldPosition).getComponentByName(ExtDoor.name()).toggleValue(level.getServer(), TardisRegistries.get(worldPosition).getID(), "door_lock");
+                    case 3 ->
+                            ServerPlayNetworking.send((ServerPlayer)player, TardisRegistries.createScreenOpeningPacket(TerminalScreen.class));
                     default -> {
                         // no interaction
                     }

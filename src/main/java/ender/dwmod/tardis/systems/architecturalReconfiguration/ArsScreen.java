@@ -1,23 +1,24 @@
 package ender.dwmod.tardis.systems.architecturalReconfiguration;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class ArsScreen extends Screen {
-    public ArsScreen(Component title)
+public class ArsScreen extends ATardisScreen {
+    
+    public ArsScreen()
     {
-        super(title);
+        super(Component.nullToEmpty("Architectural Reconfiguration System"));
+    }
+
+    public ArsScreen(Screen parentScreen)
+    {
+        super(Component.nullToEmpty("Architectural Reconfiguration System"), parentScreen);
     }
 
     @Override
     protected void init() {
-        Button exitButton = Button.builder(Component.nullToEmpty("Done"), btn ->
-        {
-            this.onClose();
-        }).bounds(this.width / 2 - 50, this.height - 30, 100, 20).build();
-        this.addRenderableWidget(exitButton);
+        super.init();
     }
 
     @Override

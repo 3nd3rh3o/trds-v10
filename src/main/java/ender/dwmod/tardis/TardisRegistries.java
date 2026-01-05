@@ -6,13 +6,19 @@ import java.util.List;
 import com.google.common.primitives.UnsignedInteger;
 import ender.dwmod.DwMod;
 import ender.dwmod.entities.tardis.exoshell.TardisEntity;
+import ender.dwmod.tardis.components.Terminal;
 import ender.dwmod.tardis.networking.TardisDataSyncS2C;
+import ender.dwmod.tardis.networking.TardisScreenOpeningS2C;
+import ender.dwmod.tardis.networking.TardisUpdateValueC2S;
 import ender.dwmod.tardis.networking.TardisUpdateValueS2C;
 import ender.dwmod.tardis.systems.architecturalReconfiguration.Room;
+import ender.dwmod.utils.StringToComponentParser;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -116,5 +122,47 @@ public final class TardisRegistries {
 
     public static Tardis get(BlockPos worldPosition) {
         return getTardis(Room.worldPosToInstanceID(worldPosition));
+    }
+
+    public static TardisScreenOpeningS2C createScreenOpeningPacket(Class<? extends Screen> screenClass) {
+        int screenID = TardisScreenRegistry.getScreenId(screenClass);
+        return new TardisScreenOpeningS2C(screenID);
+    }
+
+
+
+    public static void handleUpdateValuePacket(TardisUpdateValueC2S packet, ServerPlayNetworking.Context context)
+    {
+        for (Tardis t : tardis)
+        {
+            if (t.id().intValue() == packet.tardisID())
+            {
+                if (packet.category().equals("terminal") && packet.key().equals("terminal_text")) {
+                    String text = t.getComponentByName(Terminal.name()).getStringValue("terminal_text");
+                    List<Component> lines = StringToComponentParser.parseStringToComponents(text);
+                    if (packet.value().equals("BACKSPACE")) {
+                        // Backspace
+                        if (lines.get(lines.size() - 1).getString().length() <= 1)
+                            return;
+                        lines.set(lines.size() - 1, Component.literal(lines.get(lines.size() - 1).getString().replaceFirst(".$", "")).withStyle(lines.get(lines.size() - 1).getStyle()));
+                        t.getComponentByName(Terminal.name()).setValue(server, t.id(), "terminal_text", StringToComponentParser.serializeComponentsToString(lines));
+                    } else if (packet.value().equals("ENTER"))
+                    {
+                        // Enter
+                        
+                        lines.add(Component.literal(">"));
+                        
+                        // TODO - process command on server
+
+                        t.getComponentByName(Terminal.name()).setValue(context.server(), t.id(), "terminal_text", StringToComponentParser.serializeComponentsToString(lines));
+                    } else {
+                        // Regular character input
+                        lines.set(lines.size() - 1, Component.literal(lines.get(lines.size() - 1).getString().concat(packet.value())).withStyle(lines.get(lines.size() - 1).getStyle()));
+                        t.getComponentByName(Terminal.name()).setValue(server, t.id(), "terminal_text", StringToComponentParser.serializeComponentsToString(lines));
+                    }
+                    break;
+                }
+            }
+        }
     }
 }

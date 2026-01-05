@@ -1,13 +1,18 @@
 package client.ender.dwmod.blockEntity.console;
 
+import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import client.ender.dwmod.ClientTardisRegistries;
 import ender.dwmod.block.tardis.exoshell.DefaultConsoleBE;
 import ender.dwmod.dimensions.DimensionRegistry;
+import ender.dwmod.tardis.components.Terminal;
+import ender.dwmod.utils.StringToComponentParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
@@ -44,11 +49,15 @@ public class DefaultConsoleRenderer extends GeoBlockRenderer<DefaultConsoleBE> {
         Matrix4f matrix = poseStack.last().pose();
         Font font = mc.font;
 
-        Component text = Component.literal("Test");
+        String text = ClientTardisRegistries.get(animatable.getBlockPos()).getComponentByName(Terminal.name()).getStringValue("terminal_text");
+        List<Component> components = StringToComponentParser.parseStringToComponents(text);
+
         float startX = 0f;
         int backgroundColor = 0;
         int textColor = -1;
-        font.drawInBatch(text, startX, 0, textColor, false, matrix, bufferSource, DisplayMode.SEE_THROUGH, backgroundColor, packedLight);
+        for (int i = 0; i < components.size(); i++) {
+            font.drawInBatch(components.get(i), startX, i*font.lineHeight, textColor, false, matrix, bufferSource, DisplayMode.NORMAL, backgroundColor, packedLight);   
+        }
         poseStack.popPose();
     }
 }
